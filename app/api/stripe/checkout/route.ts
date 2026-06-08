@@ -21,6 +21,7 @@ function isCheckoutType(value: FormDataEntryValue | null): value is CheckoutType
 export async function POST(request: Request) {
   const formData = await request.formData();
   const checkoutType = formData.get("checkoutType");
+  const email = formData.get("email");
 
   if (!isCheckoutType(checkoutType)) {
     return NextResponse.json({ error: "checkoutType must be signal_submission or subscription" }, { status: 400 });
@@ -42,6 +43,7 @@ export async function POST(request: Request) {
 
   const session = await stripe.checkout.sessions.create({
     mode: isSubscription ? "subscription" : "payment",
+    customer_email: typeof email === "string" && email.includes("@") ? email : undefined,
     line_items: [
       configuredPrice
         ? { price: configuredPrice, quantity: 1 }

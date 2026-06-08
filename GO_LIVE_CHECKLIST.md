@@ -14,14 +14,17 @@ The MVP is **not ready for public launch** until each item below is complete in 
   - `STRIPE_SUBSCRIPTION_PRICE_ID`
 - Set `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` in Vercel.
 - Configure the Stripe webhook endpoint at `/api/stripe/webhook`.
+- Confirm `ALLOW_DEMO_MODE=false` in production.
+- Verify `checkout.session.completed`, `customer.subscription.updated`, and `customer.subscription.deleted` events update Supabase subscription records.
 - Verify checkout success and cancel redirects in production.
 
 ## Accounts and permissions
 
 - Enable Supabase Auth sign-up and email confirmation.
 - Add row-level security policies for all public tables.
-- Restrict publish/reject moderation actions to moderator/admin roles.
-- Connect Stripe checkout sessions to Supabase users and subscriptions.
+- Set `ADMIN_API_TOKEN` in Vercel before using moderation endpoints.
+- Restrict publish/reject/resolve moderation actions to moderator/admin roles before replacing the token-gated MVP route.
+- Confirm Stripe checkout sessions create or update Supabase users and subscriptions.
 
 ## Editorial safety
 
@@ -39,6 +42,5 @@ The MVP is **not ready for public launch** until each item below is complete in 
 ## Launch verification
 
 - Run `npm run lint`.
-- Run `npm run typecheck`.
 - Run `npm run build`.
 - Smoke test `/`, `/spokane`, every neighborhood route, legal pages, checkout links, webhook receipt, and digest delivery on the production URL.

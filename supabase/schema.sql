@@ -34,6 +34,7 @@ create table if not exists public.signals (
   neighborhood_id uuid references public.neighborhoods(id),
   status text not null default 'PENDING' check (status in ('PENDING', 'PUBLISHED', 'REJECTED', 'RESOLVED')),
   confidence_level text not null default 'Community reported',
+  moderator_note text,
   user_id uuid references public.users(id),
   created_at timestamptz not null default now()
 );
@@ -58,10 +59,12 @@ create table if not exists public.responses (
 create table if not exists public.subscriptions (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references public.users(id) on delete cascade,
-  stripe_customer_id text,
-  stripe_subscription_id text,
+  stripe_customer_id text not null,
+  stripe_subscription_id text unique not null,
   plan text not null,
-  status text not null
+  status text not null,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
 );
 
 create table if not exists public.digest_preferences (
