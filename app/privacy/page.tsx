@@ -1,0 +1,3 @@
+export default function PrivacyPage() {
+  return <div className="civic-container max-w-4xl py-12"><p className="kicker">Trust and Legal</p><h1 className="mt-3 font-serif text-6xl font-black">Privacy Policy</h1><div className="mt-8 space-y-5 text-lg leading-8 text-ink/80"><p>We collect only the account, payment, digest, and verification information needed to operate a safe civic signal platform.</p><p>We do not publish private medical information, minor names, private addresses, or identifying details that create doxxing risk.</p><p>Supabase stores application data, Stripe handles payments, Resend sends opted-in email briefings, and Vercel hosts the application.</p></div></div>;
+}

@@ -1,0 +1,2 @@
+import { CorrectionLog } from "@/components/CorrectionLog";
+export default function CorrectionsPage() { return <div className="civic-container max-w-5xl py-12"><p className="kicker">Accountability</p><h1 className="mt-3 font-serif text-6xl font-black">Corrections</h1><p className="mt-6 max-w-3xl text-xl leading-8 text-ink/75">Readers can request corrections. Editors log changes, statuses, and right-of-reply context.</p><div className="mt-8"><CorrectionLog /></div></div>; }

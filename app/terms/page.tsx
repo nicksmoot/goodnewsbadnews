@@ -1,0 +1,4 @@
+export default function TermsPage() {
+  return <LegalPage title="Terms of Use" kicker="Trust and Legal" body={["Good News Bad News is a civic media platform for verified community signals, not gossip, accusation, or harassment.", "Signal submissions may be moderated, corrected, rejected, or held for right-of-reply review.", "Paid signal submissions and subscriptions are processed through Stripe and do not guarantee publication."]} />;
+}
+function LegalPage({ title, kicker, body }: { title: string; kicker: string; body: string[] }) { return <div className="civic-container max-w-4xl py-12"><p className="kicker">{kicker}</p><h1 className="mt-3 font-serif text-6xl font-black">{title}</h1><div className="mt-8 space-y-5 text-lg leading-8 text-ink/80">{body.map((p) => <p key={p}>{p}</p>)}</div></div>; }

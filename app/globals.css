@@ -1,0 +1,29 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-news-serif: "Newsreader", "Iowan Old Style", Georgia, serif;
+  --font-civic-sans: "Inter", "Helvetica Neue", Arial, sans-serif;
+  background: #f7f0e4;
+  color: #11100d;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background:
+    radial-gradient(circle at top left, rgba(184, 138, 32, 0.10), transparent 30rem),
+    linear-gradient(180deg, #fbf6ec 0%, #f7f0e4 40%, #efe3d1 100%);
+  color: #11100d;
+  font-family: var(--font-civic-sans);
+}
+
+a { color: inherit; text-decoration: none; }
+::selection { background: #11100d; color: #f7f0e4; }
+
+.civic-container { @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8; }
+.editorial-card { @apply border border-rule bg-paper/80 shadow-civic backdrop-blur; }
+.kicker { @apply text-xs font-bold uppercase tracking-[0.22em] text-muted; }
+.rule { @apply border-t border-rule; }
