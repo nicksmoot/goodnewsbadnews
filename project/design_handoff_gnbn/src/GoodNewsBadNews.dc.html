@@ -1,0 +1,1348 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600;700;800&family=Public+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:#f4ecdd;color:#161616;font-family:'Public Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  ::selection{background:#19734a;color:#fff}
+  @keyframes gnbn-ticker{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+  @keyframes gnbn-fade{from{transform:translateY(6px)}to{transform:none}}
+  input,select,textarea,button{font-family:inherit}
+  a{color:inherit}
+  img{max-width:100%}
+
+  /* ---- Mobile ---- */
+  @media (max-width:820px){
+    /* every multi-column grid (cards, map split, dark panels) stacks */
+    [style*="grid-template-columns"]{ grid-template-columns:1fr !important; }
+    /* header: brand wraps above a horizontally-scrollable nav */
+    header nav{ flex-wrap:nowrap !important; overflow-x:auto; width:100%; gap:2px !important; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
+    header nav::-webkit-scrollbar{ display:none; }
+    header nav a{ flex:0 0 auto; white-space:nowrap; }
+    /* trim oversized hero / section top padding */
+    section[style*="padding:64px 24px"]{ padding-top:40px !important; }
+    section[style*="padding:56px 24px"]{ padding-top:34px !important; }
+    section[style*="padding:52px 24px"]{ padding-top:32px !important; }
+    section[style*="padding:50px 24px"]{ padding-top:30px !important; }
+    /* the map needs less height on small screens */
+    #gnbn-map{ height:420px !important; }
+  }
+  @media (max-width:560px){
+    /* big dark panels: tighter padding + radius */
+    [style*="padding:46px;"]{ padding:26px !important; }
+    [style*="padding:42px;"]{ padding:24px !important; }
+    [style*="border-radius:24px"]{ border-radius:18px !important; }
+    /* full-width CTA buttons so they don't crowd */
+    section[style*="padding:64px 24px"] a[href="#/submit"],
+    section[style*="padding:64px 24px"] a[href="#/latest"]{ flex:1 1 100%; text-align:center; }
+  }
+</style>
+</helmet>
+
+<div style="min-height:100vh;display:flex;flex-direction:column">
+
+<header style="position:sticky;top:0;z-index:50;background:rgba(248,242,231,0.92);backdrop-filter:blur(10px);border-bottom:1px solid #d8cab2">
+  <div style="max-width:1240px;margin:0 auto;padding:13px 24px;display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap">
+    <div style="display:flex;align-items:center;gap:11px;flex-shrink:0">
+      <a href="#/" style="display:flex;align-items:baseline;gap:9px;text-decoration:none">
+        <span style="font-family:'Spectral',serif;font-weight:800;font-size:25px;letter-spacing:-0.6px;line-height:1"><span style="color:#19734a">Good News</span> <span style="color:#a33429">Bad News</span></span>
+      </a>
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:600;letter-spacing:1.4px;color:#8a857a;text-transform:uppercase">in</span>
+      <select value="{{ city }}" onChange="{{ onCity }}" style="font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;letter-spacing:1px;color:#9a6a12;text-transform:uppercase;border:1px solid #c99a2e80;border-radius:6px;padding:5px 8px;background:#fffaf1;cursor:pointer">
+        <option value="spokane">Spokane, WA</option>
+        <option value="honolulu">Honolulu, HI</option>
+      </select>
+    </div>
+    <nav style="display:flex;gap:4px;align-items:center;flex-wrap:wrap;font-family:'Public Sans',sans-serif;font-size:13.5px;font-weight:600">
+      <a href="#/latest" style="text-decoration:none;padding:7px 11px;border-radius:8px;color:{{ navLatest }}">Latest</a>
+      <a href="#/good" style="text-decoration:none;padding:7px 11px;border-radius:8px;color:{{ navGood }}">Good</a>
+      <a href="#/bad" style="text-decoration:none;padding:7px 11px;border-radius:8px;color:{{ navBad }}">Bad</a>
+      <a href="#/both" style="text-decoration:none;padding:7px 11px;border-radius:8px;color:{{ navBoth }}">Both</a>
+      <a href="#/map" style="text-decoration:none;padding:7px 11px;border-radius:8px;color:{{ navMap }}">Map</a>
+      <a href="#/digest" style="text-decoration:none;padding:7px 11px;border-radius:8px;color:{{ navDigest }}">Digest</a>
+      <a href="#/about" style="text-decoration:none;padding:7px 11px;border-radius:8px;color:{{ navAbout }}">About</a>
+      <a href="#/standards" style="text-decoration:none;padding:7px 11px;border-radius:8px;color:{{ navStandards }}">Standards</a>
+      <a href="#/partners" style="text-decoration:none;padding:7px 11px;border-radius:8px;color:{{ navPartners }}">Partners</a>
+      <sc-if value="{{ showAdmin }}" hint-placeholder-val="{{ true }}">
+        <a href="#/admin" style="text-decoration:none;padding:7px 11px;border-radius:8px;color:{{ navAdmin }};font-family:'IBM Plex Mono',monospace;font-size:12px">Moderation</a>
+      </sc-if>
+      <a href="#/submit" style="text-decoration:none;background:#161616;color:#fff;border-radius:999px;padding:9px 16px;font-weight:700;margin-left:6px">Submit a Signal</a>
+    </nav>
+  </div>
+</header>
+
+<main style="flex:1">
+
+<!-- ============ HOME ============ -->
+<sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+<div style="">
+  <section style="max-width:1240px;margin:0 auto;padding:64px 24px 30px;display:grid;grid-template-columns:1.3fr 0.7fr;gap:44px;align-items:end">
+    <div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;letter-spacing:2px;color:#9a6a12;text-transform:uppercase;margin-bottom:18px">A civic signal platform · Now live in two cities</div>
+      <h1 style="font-family:'Spectral',serif;font-weight:800;font-size:clamp(46px,7vw,88px);line-height:0.93;letter-spacing:-2.5px;margin:0 0 22px">Every city has two stories. Both matter.</h1>
+      <p style="font-size:20px;line-height:1.5;color:#3a362e;max-width:660px;margin:0 0 28px">Good News Bad News is a civic signal platform where residents submit the wins, concerns, patterns, and opportunities they're seeing around them. We review and organize those signals so a community can see what's working, what needs attention, and where to act next. Now launching in <strong>Spokane</strong> and <strong>Honolulu</strong>.</p>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:22px">
+        <a href="#/submit" style="text-decoration:none;background:#19734a;color:#fff;border-radius:999px;padding:14px 24px;font-weight:700;font-size:16px">Submit a Signal</a>
+        <a href="#/latest" style="text-decoration:none;background:transparent;color:#161616;border:1px solid #161616;border-radius:999px;padding:14px 24px;font-weight:700;font-size:16px">Read the Latest</a>
+        <a href="#/digest" style="text-decoration:none;background:transparent;color:#161616;border:1px solid #d8cab2;border-radius:999px;padding:14px 24px;font-weight:700;font-size:16px">Get the Weekly Digest</a>
+      </div>
+      <p style="font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:#6b675e;line-height:1.5;letter-spacing:0.2px;max-width:560px">No gossip. No doxxing. No unsupported accusations. Just local signal, reviewed and organized.</p>
+    </div>
+    <aside style="background:#fffaf1;border:1px solid #d8cab2;border-radius:20px;padding:26px;box-shadow:0 10px 34px rgba(0,0,0,0.05)">
+      <h3 style="font-family:'Spectral',serif;font-weight:700;font-size:26px;margin:0 0 6px">This week in {{ cityName }}</h3>
+      <p style="font-size:14px;color:#5a564d;line-height:1.5;margin:0 0 14px">The good, the bad, and the complicated - filtered through verified resident signals and human review.</p>
+      <div style="display:flex;justify-content:space-between;border-top:1px solid #e4d8c2;padding:12px 0;font-size:14px"><span style="color:#5a564d">Published signals</span><strong style="font-family:'Spectral',serif;font-size:18px">{{ statPublished }}</strong></div>
+      <div style="display:flex;justify-content:space-between;border-top:1px solid #e4d8c2;padding:12px 0;font-size:14px"><span style="color:#5a564d">In moderation queue</span><strong style="font-family:'Spectral',serif;font-size:18px">{{ statQueue }}</strong></div>
+      <div style="display:flex;justify-content:space-between;border-top:1px solid #e4d8c2;padding:12px 0;font-size:14px"><span style="color:#5a564d">Most active area</span><strong style="font-family:'Spectral',serif;font-size:18px">{{ activeArea }}</strong></div>
+      <div style="display:flex;justify-content:space-between;border-top:1px solid #e4d8c2;padding:12px 0;font-size:14px"><span style="color:#5a564d">Saturday digest</span><strong style="font-family:'Spectral',serif;font-size:18px">Good / Bad / Both</strong></div>
+    </aside>
+  </section>
+
+  <section style="max-width:1240px;margin:0 auto;padding:8px 24px 30px">
+    <div style="font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:1.6px;font-size:12px;color:#6b675e;border-bottom:1px solid #d8cab2;padding-bottom:12px;margin-bottom:22px">Now launching in two cities</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
+      <button onClick="{{ goSpokane }}" style="text-align:left;cursor:pointer;background:#fffaf1;border:1px solid #d8cab2;border-radius:18px;padding:26px;display:flex;flex-direction:column;gap:9px">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:#9a6a12">Washington</div>
+        <h3 style="font-family:'Spectral',serif;font-weight:800;font-size:32px;margin:0;letter-spacing:-0.8px">Spokane</h3>
+        <p style="font-size:14.5px;line-height:1.5;color:#5a564d;margin:0">Live across {{ spokaneHoods }} neighborhoods. Explore the signal map, read the latest feed, and submit what you're seeing.</p>
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:700;color:#19734a;margin-top:4px">Open the Spokane map &rarr;</span>
+      </button>
+      <button onClick="{{ goHonolulu }}" style="text-align:left;cursor:pointer;background:#fffaf1;border:1px solid #d8cab2;border-radius:18px;padding:26px;display:flex;flex-direction:column;gap:9px">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:#9a6a12">Hawaiʻi</div>
+        <h3 style="font-family:'Spectral',serif;font-weight:800;font-size:32px;margin:0;letter-spacing:-0.8px">Honolulu</h3>
+        <p style="font-size:14.5px;line-height:1.5;color:#5a564d;margin:0">Live across {{ honoluluHoods }} neighborhoods, from Waikīkī to Kalihi. See where the island's wins and concerns are clustering.</p>
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:700;color:#19734a;margin-top:4px">Open the Honolulu map &rarr;</span>
+      </button>
+    </div>
+  </section>
+
+  <div style="background:#161616;color:#fff;overflow:hidden;white-space:nowrap;font-family:'IBM Plex Mono',monospace;font-size:12.5px;letter-spacing:0.4px">
+    <div style="display:inline-block;padding:11px 0;animation:gnbn-ticker 46s linear infinite">{{ tickerText }}{{ tickerText }}</div>
+  </div>
+
+  <section style="max-width:1240px;margin:0 auto;padding:56px 24px 10px">
+    <div style="font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:1.6px;font-size:12px;color:#6b675e;border-bottom:1px solid #d8cab2;padding-bottom:12px;margin-bottom:26px">How it works</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:18px">
+      <div style="background:#fffaf1;border:1px solid #d8cab2;border-radius:18px;padding:22px">
+        <div style="font-family:'Spectral',serif;font-weight:800;font-size:34px;color:#9a6a12;line-height:1;margin-bottom:12px">1</div>
+        <h3 style="font-family:'Spectral',serif;font-weight:700;font-size:21px;margin:0 0 8px">Residents submit signals</h3>
+        <p style="font-size:14.5px;line-height:1.5;color:#5a564d;margin:0">Share a win, concern, pattern, opportunity, or question from your neighborhood.</p>
+      </div>
+      <div style="background:#fffaf1;border:1px solid #d8cab2;border-radius:18px;padding:22px">
+        <div style="font-family:'Spectral',serif;font-weight:800;font-size:34px;color:#9a6a12;line-height:1;margin-bottom:12px">2</div>
+        <h3 style="font-family:'Spectral',serif;font-weight:700;font-size:21px;margin:0 0 8px">We review and organize</h3>
+        <p style="font-size:14.5px;line-height:1.5;color:#5a564d;margin:0">Submissions are checked for clarity, safety, location, topic, and possible verification.</p>
+      </div>
+      <div style="background:#fffaf1;border:1px solid #d8cab2;border-radius:18px;padding:22px">
+        <div style="font-family:'Spectral',serif;font-weight:800;font-size:34px;color:#9a6a12;line-height:1;margin-bottom:12px">3</div>
+        <h3 style="font-family:'Spectral',serif;font-weight:700;font-size:21px;margin:0 0 8px">The community sees the pattern</h3>
+        <p style="font-size:14.5px;line-height:1.5;color:#5a564d;margin:0">Some become public posts, some become stories, some are combined into pattern reports.</p>
+      </div>
+      <div style="background:#fffaf1;border:1px solid #d8cab2;border-radius:18px;padding:22px">
+        <div style="font-family:'Spectral',serif;font-weight:800;font-size:34px;color:#9a6a12;line-height:1;margin-bottom:12px">4</div>
+        <h3 style="font-family:'Spectral',serif;font-weight:700;font-size:21px;margin:0 0 8px">People respond</h3>
+        <p style="font-size:14.5px;line-height:1.5;color:#5a564d;margin:0">Residents, nonprofits, businesses, churches, and civic leaders see where help is needed.</p>
+      </div>
+    </div>
+  </section>
+
+  <section style="max-width:1240px;margin:0 auto;padding:46px 24px 10px">
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:18px">
+      <a href="#/good" style="text-decoration:none;display:block;background:#fffaf1;border:1px solid #19734a59;border-left:5px solid #19734a;border-radius:16px;padding:24px">
+        <div style="font-family:'IBM Plex Mono',monospace;font-weight:600;letter-spacing:1.4px;font-size:12px;color:#19734a;text-transform:uppercase;margin-bottom:10px">Good News</div>
+        <h3 style="font-family:'Spectral',serif;font-weight:700;font-size:24px;margin:0 0 8px;color:#161616">The wins worth celebrating.</h3>
+        <p style="font-size:14.5px;line-height:1.5;color:#5a564d;margin:0">Improvements, inspiring people, promising programs, and local momentum.</p>
+      </a>
+      <a href="#/bad" style="text-decoration:none;display:block;background:#fffaf1;border:1px solid #a3342959;border-left:5px solid #a33429;border-radius:16px;padding:24px">
+        <div style="font-family:'IBM Plex Mono',monospace;font-weight:600;letter-spacing:1.4px;font-size:12px;color:#a33429;text-transform:uppercase;margin-bottom:10px">Bad News</div>
+        <h3 style="font-family:'Spectral',serif;font-weight:700;font-size:24px;margin:0 0 8px;color:#161616">The problems that need attention.</h3>
+        <p style="font-size:14.5px;line-height:1.5;color:#5a564d;margin:0">Risks, gaps, failures, and early warnings - surfaced constructively.</p>
+      </a>
+      <a href="#/both" style="text-decoration:none;display:block;background:#fffaf1;border:1px solid #c99a2e80;border-left:5px solid #c99a2e;border-radius:16px;padding:24px">
+        <div style="font-family:'IBM Plex Mono',monospace;font-weight:600;letter-spacing:1.4px;font-size:12px;color:#9a6a12;text-transform:uppercase;margin-bottom:10px">Both</div>
+        <h3 style="font-family:'Spectral',serif;font-weight:700;font-size:24px;margin:0 0 8px;color:#161616">Where progress and problems coexist.</h3>
+        <p style="font-size:14.5px;line-height:1.5;color:#5a564d;margin:0">The complicated stories that don't fit a single label.</p>
+      </a>
+    </div>
+  </section>
+
+  <section style="max-width:1240px;margin:0 auto;padding:50px 24px 10px">
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;border-bottom:1px solid #d8cab2;padding-bottom:12px;margin-bottom:26px;gap:16px;flex-wrap:wrap">
+      <div style="font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:1.6px;font-size:12px;color:#6b675e">Latest signals</div>
+      <a href="#/latest" style="text-decoration:none;font-size:13.5px;font-weight:700;color:#19734a">See the full feed &rarr;</a>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:18px">
+      <sc-for list="{{ homePosts }}" as="post" hint-placeholder-count="3">
+        <article onClick="{{ post.open }}" style="cursor:pointer;background:#fffaf1;border:1px solid #d8cab2;border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:10px;min-height:210px">
+          <div style="display:flex;gap:7px;flex-wrap:wrap">
+            <span style="font-family:'IBM Plex Mono',monospace;font-weight:600;letter-spacing:1px;font-size:10.5px;text-transform:uppercase;padding:4px 8px;border-radius:999px;color:{{ post.catColor }};background:{{ post.catBg }};border:1px solid {{ post.catBorder }}">{{ post.catLabel }}</span>
+            <span style="font-family:'IBM Plex Mono',monospace;font-weight:600;letter-spacing:0.6px;font-size:10.5px;text-transform:uppercase;padding:4px 8px;border-radius:999px;color:{{ post.statusColor }};border:1px solid {{ post.statusBorder }}">{{ post.status }}</span>
+          </div>
+          <h3 style="font-family:'Spectral',serif;font-weight:700;font-size:20px;line-height:1.15;margin:0">{{ post.title }}</h3>
+          <p style="font-size:14px;line-height:1.45;color:#5a564d;margin:0;flex:1">{{ post.summary }}</p>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#8a857a;letter-spacing:0.3px">{{ post.metaLine }}</div>
+        </article>
+      </sc-for>
+    </div>
+  </section>
+
+  <section style="max-width:1240px;margin:0 auto;padding:52px 24px">
+    <div style="background:#161616;color:#fff;border-radius:24px;padding:46px;display:grid;grid-template-columns:1.4fr 1fr;gap:40px;align-items:center">
+      <div>
+        <h2 style="font-family:'Spectral',serif;font-weight:800;font-size:38px;line-height:1.05;letter-spacing:-1px;margin:0 0 14px">Seen something {{ cityName }} should know?</h2>
+        <p style="font-size:17px;line-height:1.55;color:#cfc8b9;margin:0 0 22px;max-width:520px">Submit a signal. It can be a good story, a concern, a trend, a resource, or something you think people are missing.</p>
+        <a href="#/submit" style="text-decoration:none;display:inline-block;background:#19734a;color:#fff;border-radius:999px;padding:14px 26px;font-weight:700;font-size:16px">Submit a Signal</a>
+      </div>
+      <div style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.14);border-radius:16px;padding:24px">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:#c99a2e;margin-bottom:14px">We review submissions before publication</div>
+        <ul style="margin:0;padding-left:18px;font-size:14.5px;line-height:1.9;color:#e7e1d4">
+          <li>We report patterns, not rumors.</li>
+          <li>We don't publish private personal information.</li>
+          <li>A submitted signal is not a verified fact.</li>
+          <li>Some submissions are used only as background intelligence.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</div>
+</sc-if>
+
+<!-- ============ FEED (Latest / Good / Bad / Both) ============ -->
+<sc-if value="{{ isFeed }}">
+<div style="">
+  <section style="max-width:1240px;margin:0 auto;padding:48px 24px 0">
+    <div style="font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:1.6px;font-size:12px;color:#6b675e;margin-bottom:14px">{{ feedKicker }}</div>
+    <h1 style="font-family:'Spectral',serif;font-weight:800;font-size:clamp(38px,5vw,60px);line-height:1;letter-spacing:-1.8px;margin:0 0 14px">{{ feedTitle }}</h1>
+    <p style="font-size:18px;line-height:1.5;color:#5a564d;max-width:720px;margin:0 0 28px">{{ feedDesc }}</p>
+  </section>
+
+  <section style="max-width:1240px;margin:0 auto;padding:0 24px 12px">
+    <div style="background:#fbf4e6;border:1px solid #d8cab2;border-radius:18px;padding:14px;display:flex;flex-wrap:wrap;gap:10px;align-items:center">
+      <input value="{{ fSearch }}" onInput="{{ onSearch }}" placeholder="Search signals…" style="flex:1;min-width:200px;border:1px solid #d8cab2;background:#fffdf8;padding:11px 13px;border-radius:10px;font-size:14.5px;color:#161616">
+      <select value="{{ fTopic }}" onChange="{{ onTopic }}" style="border:1px solid #d8cab2;background:#fffdf8;padding:11px 13px;border-radius:10px;font-size:14px;color:#161616">
+        <sc-for list="{{ topicOptions }}" as="t" hint-placeholder-count="4"><option value="{{ t }}">{{ t }}</option></sc-for>
+      </select>
+      <select value="{{ fHood }}" onChange="{{ onHood }}" style="border:1px solid #d8cab2;background:#fffdf8;padding:11px 13px;border-radius:10px;font-size:14px;color:#161616">
+        <sc-for list="{{ hoodOptions }}" as="h" hint-placeholder-count="4"><option value="{{ h }}">{{ h }}</option></sc-for>
+      </select>
+      <select value="{{ fSort }}" onChange="{{ onSort }}" style="border:1px solid #d8cab2;background:#fffdf8;padding:11px 13px;border-radius:10px;font-size:14px;color:#161616">
+        <option value="latest">Newest first</option>
+        <option value="helpful">Most helpful</option>
+      </select>
+    </div>
+  </section>
+
+  <sc-if value="{{ showCatChips }}">
+  <section style="max-width:1240px;margin:0 auto;padding:12px 24px 0">
+    <div style="display:flex;flex-wrap:wrap;gap:8px">
+      <sc-for list="{{ catChips }}" as="chip" hint-placeholder-count="5">
+        <button onClick="{{ chip.onClick }}" style="border:1px solid {{ chip.border }};background:{{ chip.bg }};color:{{ chip.color }};border-radius:999px;padding:9px 14px;font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;letter-spacing:0.5px;cursor:pointer;text-transform:uppercase">{{ chip.label }}</button>
+      </sc-for>
+    </div>
+  </section>
+  </sc-if>
+
+  <section style="max-width:1240px;margin:0 auto;padding:24px 24px 64px">
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:#8a857a;letter-spacing:0.4px;margin-bottom:18px">{{ feedCountLine }}</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:18px">
+      <sc-for list="{{ feedPosts }}" as="post" hint-placeholder-count="6">
+        <article onClick="{{ post.open }}" style="cursor:pointer;background:#fffaf1;border:1px solid #d8cab2;border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:11px;min-height:230px">
+          <sc-if value="{{ post.hasPhoto }}" hint-placeholder-val="{{ false }}">{{ post.cardPhotoEl }}</sc-if>
+          <div style="display:flex;gap:7px;flex-wrap:wrap">
+            <span style="font-family:'IBM Plex Mono',monospace;font-weight:600;letter-spacing:1px;font-size:10.5px;text-transform:uppercase;padding:4px 8px;border-radius:999px;color:{{ post.catColor }};background:{{ post.catBg }};border:1px solid {{ post.catBorder }}">{{ post.catLabel }}</span>
+            <span style="font-family:'IBM Plex Mono',monospace;font-weight:600;letter-spacing:0.6px;font-size:10.5px;text-transform:uppercase;padding:4px 8px;border-radius:999px;color:{{ post.statusColor }};border:1px solid {{ post.statusBorder }}">{{ post.status }}</span>
+          </div>
+          <h3 style="font-family:'Spectral',serif;font-weight:700;font-size:21px;line-height:1.15;margin:0">{{ post.title }}</h3>
+          <p style="font-size:14px;line-height:1.45;color:#5a564d;margin:0;flex:1">{{ post.summary }}</p>
+          <div style="display:flex;flex-wrap:wrap;gap:6px">
+            <sc-for list="{{ post.topics }}" as="topic" hint-placeholder-count="2"><span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:#6b675e;border:1px solid #e0d4be;border-radius:999px;padding:4px 8px;background:#fffdf8">{{ topic }}</span></sc-for>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid #ece1cd;padding-top:10px">
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#8a857a">{{ post.metaLine }}</span>
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#19734a;font-weight:600">{{ post.helpfulLine }}</span>
+          </div>
+        </article>
+      </sc-for>
+    </div>
+    <sc-if value="{{ feedEmpty }}">
+      <div style="text-align:center;padding:60px 20px;color:#8a857a;font-size:16px">No signals match these filters yet. <a href="#/submit" style="color:#19734a;font-weight:700">Submit one &rarr;</a></div>
+    </sc-if>
+  </section>
+</div>
+</sc-if>
+
+<!-- ============ POST DETAIL ============ -->
+<sc-if value="{{ isPost }}">
+<div style="">
+  <article style="max-width:760px;margin:0 auto;padding:44px 24px 70px">
+    <a href="{{ backHref }}" style="text-decoration:none;font-family:'IBM Plex Mono',monospace;font-size:12px;color:#6b675e;letter-spacing:0.5px">&larr; Back to feed</a>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin:22px 0 16px">
+      <span style="font-family:'IBM Plex Mono',monospace;font-weight:600;letter-spacing:1px;font-size:11px;text-transform:uppercase;padding:5px 10px;border-radius:999px;color:{{ detail.catColor }};background:{{ detail.catBg }};border:1px solid {{ detail.catBorder }}">{{ detail.catLabel }}</span>
+      <span style="font-family:'IBM Plex Mono',monospace;font-weight:600;letter-spacing:0.6px;font-size:11px;text-transform:uppercase;padding:5px 10px;border-radius:999px;color:{{ detail.statusColor }};border:1px solid {{ detail.statusBorder }}">{{ detail.status }}</span>
+    </div>
+    <h1 style="font-family:'Spectral',serif;font-weight:800;font-size:clamp(32px,4.4vw,46px);line-height:1.05;letter-spacing:-1.4px;margin:0 0 16px">{{ detail.title }}</h1>
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:#8a857a;letter-spacing:0.3px;border-bottom:1px solid #d8cab2;padding-bottom:20px;margin-bottom:24px">{{ detail.metaLine }}</div>
+    <sc-if value="{{ detail.hasPhoto }}" hint-placeholder-val="{{ false }}">{{ detail.detailPhotoEl }}</sc-if>
+    <sc-for list="{{ detail.body }}" as="para" hint-placeholder-count="3">
+      <p style="font-family:'Spectral',serif;font-size:19px;line-height:1.62;color:#2b2820;margin:0 0 20px">{{ para }}</p>
+    </sc-for>
+
+    <div style="background:#fbf4e6;border:1px solid #d8cab2;border-radius:16px;padding:22px;margin:8px 0 24px">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:#9a6a12;margin-bottom:10px">What happens next</div>
+      <p style="font-size:15px;line-height:1.55;color:#3a362e;margin:0">{{ detail.nextStep }}</p>
+    </div>
+
+    <div style="display:flex;flex-wrap:wrap;gap:10px;border-top:1px solid #d8cab2;padding-top:22px">
+      <button onClick="{{ detail.seen }}" style="border:1px solid #19734a;background:#19734a14;color:#19734a;border-radius:999px;padding:11px 18px;font-weight:700;font-size:14px;cursor:pointer">✓ I've seen this too · {{ detail.seenCount }}</button>
+      <button onClick="{{ onHelp }}" style="border:1px solid #285d83;background:#285d831a;color:#285d83;border-radius:999px;padding:11px 18px;font-weight:700;font-size:14px;cursor:pointer">I can help</button>
+      <button onClick="{{ detail.follow }}" style="border:1px solid #d8cab2;background:#fffdf8;color:#161616;border-radius:999px;padding:11px 18px;font-weight:700;font-size:14px;cursor:pointer">{{ detail.followLabel }}</button>
+    </div>
+    <sc-if value="{{ helpOpen }}">
+      <div style="background:#fffaf1;border:1px solid #285d834d;border-radius:16px;padding:20px;margin-top:18px">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:#285d83;margin-bottom:10px">Respond to a community need</div>
+        <p style="font-size:14.5px;color:#3a362e;margin:0 0 12px">Are you part of an organization, business, church, agency, or neighborhood group that can help? Tell us what's available.</p>
+        <select style="width:100%;border:1px solid #d8cab2;background:#fffdf8;padding:11px;border-radius:10px;font-size:14px;margin-bottom:12px"><option>I can volunteer</option><option>I can mentor</option><option>I can donate supplies</option><option>I know someone who can help</option></select>
+        <button onClick="{{ submitHelp }}" style="border:none;background:#285d83;color:#fff;border-radius:999px;padding:11px 18px;font-weight:700;font-size:14px;cursor:pointer">Submit response</button>
+      </div>
+    </sc-if>
+  </article>
+</div>
+</sc-if>
+
+<!-- ============ SUBMIT ============ -->
+<sc-if value="{{ isSubmit }}">
+<div style="">
+  <section style="max-width:820px;margin:0 auto;padding:48px 24px 70px">
+    <div style="font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:1.6px;font-size:12px;color:#6b675e;margin-bottom:14px">Submit a Signal</div>
+    <h1 style="font-family:'Spectral',serif;font-weight:800;font-size:clamp(34px,4.6vw,52px);line-height:1;letter-spacing:-1.6px;margin:0 0 14px">What are you seeing in {{ cityName }}?</h1>
+    <p style="font-size:17px;line-height:1.5;color:#5a564d;max-width:640px;margin:0 0 22px">Share real stories about public life in {{ cityName }} - a good thing happening, a problem that needs attention, a pattern, a resource, or an opportunity. {{ submitFeeLine }} Add a photo and tags if you have them.</p>
+
+    <div style="background:#fff8eb;border:1px solid #c99a2e80;border-radius:14px;padding:16px 18px;margin-bottom:26px">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1.2px;text-transform:uppercase;color:#9a6a12;margin-bottom:8px">Public civic stories only</div>
+      <p style="font-size:13.5px;line-height:1.55;color:#5a564d;margin:0">This is a platform for the public life of the city - not personal disputes. Please don't post about cheaters, divorces, family conflicts, or private individuals. No doxxing, threats, or private personal information. Keep it about places, systems, and community.</p>
+    </div>
+
+    <sc-if value="{{ submitted }}" hint-placeholder-val="{{ false }}">
+      <div style="background:#19734a;color:#fff;border-radius:20px;padding:36px;text-align:center;">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:1.6px;text-transform:uppercase;color:#bfe6d3;margin-bottom:12px">Signal received</div>
+        <h2 style="font-family:'Spectral',serif;font-weight:700;font-size:30px;margin:0 0 12px">Thanks - it's in the queue.</h2>
+        <p style="font-size:16px;line-height:1.55;color:#e7f2ec;max-width:520px;margin:0 auto 12px">Our team will review it before anything is published. Some submissions become public stories, some become background signals, and some are combined with other reports to identify patterns.</p>
+        <div style="background:rgba(255,255,255,0.1);border-radius:12px;padding:14px;max-width:520px;margin:0 auto 22px;text-align:left">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1.2px;text-transform:uppercase;color:#bfe6d3;margin-bottom:8px">Automated safety scan</div>
+          <p style="font-size:14px;line-height:1.5;color:#fff;margin:0">{{ scanMessage }}</p>
+        </div>
+        <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+          <a href="#/latest" style="text-decoration:none;background:#fff;color:#19734a;border-radius:999px;padding:12px 22px;font-weight:700">Read the feed</a>
+          <button onClick="{{ resetForm }}" style="border:1px solid rgba(255,255,255,0.6);background:transparent;color:#fff;border-radius:999px;padding:12px 22px;font-weight:700;cursor:pointer">Submit another</button>
+          <sc-if value="{{ showAdmin }}"><a href="#/admin" style="text-decoration:none;border:1px solid rgba(255,255,255,0.6);background:transparent;color:#fff;border-radius:999px;padding:12px 22px;font-weight:700">See it in moderation</a></sc-if>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ formOpen }}" hint-placeholder-val="{{ true }}">
+    <div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:28px">
+        <sc-for list="{{ steps }}" as="s" hint-placeholder-count="4">
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;border-radius:999px;padding:8px 12px;border:1px solid {{ s.border }};background:{{ s.bg }};color:{{ s.color }}">{{ s.label }}</span>
+        </sc-for>
+      </div>
+
+      <sc-if value="{{ step1 }}" hint-placeholder-val="{{ true }}">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div style="grid-column:1/-1"><label style="display:block;font-family:'IBM Plex Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#8a857a;margin-bottom:7px;font-weight:600">Signal title</label><input value="{{ form.title }}" onInput="{{ onTitle }}" placeholder="A short, specific Spokane headline" style="width:100%;border:1px solid #d8cab2;background:#fffdf8;padding:12px;border-radius:11px;font-size:15px"></div>
+        <div><label style="display:block;font-family:'IBM Plex Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#8a857a;margin-bottom:7px;font-weight:600">What kind of signal?</label><select value="{{ form.type }}" onChange="{{ onType }}" style="width:100%;border:1px solid #d8cab2;background:#fffdf8;padding:12px;border-radius:11px;font-size:15px"><option>Good News</option><option>Bad News</option><option>Both</option><option>Opportunity</option><option>Signal</option><option>Pattern / Trend</option><option>Question</option></select></div>
+        <div><label style="display:block;font-family:'IBM Plex Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#8a857a;margin-bottom:7px;font-weight:600">Topic</label><select value="{{ form.topic }}" onChange="{{ onTopic2 }}" style="width:100%;border:1px solid #d8cab2;background:#fffdf8;padding:12px;border-radius:11px;font-size:15px"><sc-for list="{{ topicList }}" as="t" hint-placeholder-count="6"><option>{{ t }}</option></sc-for></select></div>
+        <div><label style="display:block;font-family:'IBM Plex Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#8a857a;margin-bottom:7px;font-weight:600">Neighborhood</label><select value="{{ form.neighborhood }}" onChange="{{ onHoodField }}" style="width:100%;border:1px solid #d8cab2;background:#fffdf8;padding:12px;border-radius:11px;font-size:15px"><sc-for list="{{ hoodList }}" as="h" hint-placeholder-count="5"><option>{{ h }}</option></sc-for></select></div>
+        <div><label style="display:block;font-family:'IBM Plex Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#8a857a;margin-bottom:7px;font-weight:600">Cross-streets (optional)</label><input value="{{ form.cross }}" onInput="{{ onCross }}" placeholder="e.g. Monroe & Montgomery" style="width:100%;border:1px solid #d8cab2;background:#fffdf8;padding:12px;border-radius:11px;font-size:15px"></div>
+        <div style="grid-column:1/-1"><label style="display:block;font-family:'IBM Plex Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#8a857a;margin-bottom:7px;font-weight:600">What did you observe?</label><textarea value="{{ form.body }}" onInput="{{ onBody }}" placeholder="Describe what's happening in the city. Be specific about the place and the situation. Keep it about public life, not private individuals." style="width:100%;border:1px solid #d8cab2;background:#fffdf8;padding:12px;border-radius:11px;font-size:15px;min-height:150px;resize:vertical;font-family:'Public Sans',sans-serif"></textarea></div>
+        <div style="grid-column:1/-1"><label style="display:block;font-family:'IBM Plex Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#8a857a;margin-bottom:7px;font-weight:600">Tags (comma separated, optional)</label><input value="{{ form.tags }}" onInput="{{ onTags }}" placeholder="e.g. downtown, cleanup, youth" style="width:100%;border:1px solid #d8cab2;background:#fffdf8;padding:12px;border-radius:11px;font-size:15px"></div>
+        <div style="grid-column:1/-1">
+          <label style="display:block;font-family:'IBM Plex Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#8a857a;margin-bottom:7px;font-weight:600">Photo (optional)</label>
+          <sc-if value="{{ hasPhoto }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;gap:14px;align-items:center;background:#fffdf8;border:1px solid #d8cab2;border-radius:12px;padding:12px">
+              {{ photoThumbEl }}
+              <div style="flex:1;min-width:0"><div style="font-size:13.5px;color:#3a362e;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ photoName }}</div><div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#8a857a;margin-top:2px">Only upload photos of public places or conditions you have the right to share.</div></div>
+              <button onClick="{{ removePhoto }}" style="border:1px solid #a3342959;background:#a3342914;color:#a33429;border-radius:9px;padding:8px 12px;font-size:12.5px;font-weight:700;cursor:pointer">Remove</button>
+            </div>
+          </sc-if>
+          <sc-if value="{{ noPhoto }}" hint-placeholder-val="{{ true }}">
+            <label style="display:flex;align-items:center;gap:12px;border:1px dashed #c2b294;background:#fffdf8;border-radius:12px;padding:16px;cursor:pointer">
+              <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:#9a6a12;border:1px solid #c99a2e80;border-radius:8px;padding:8px 12px;font-weight:600">Choose photo</span>
+              <span style="font-size:13px;color:#8a857a">JPG or PNG. Public conditions only - no faces of minors, license plates, or private details.</span>
+              <input type="file" accept="image/*" onChange="{{ onPhoto }}" style="display:none">
+            </label>
+          </sc-if>
+        </div>
+      </div>
+      <div style="margin-top:22px"><button onClick="{{ next2 }}" style="border:none;background:#161616;color:#fff;border-radius:999px;padding:13px 24px;font-weight:700;font-size:15px;cursor:pointer">Next: Safety check &rarr;</button></div>
+      </sc-if>
+
+      <sc-if value="{{ step2 }}">
+      <div style="display:flex;flex-direction:column;gap:11px">
+        <label style="display:flex;gap:11px;align-items:flex-start;padding:14px;border:1px solid #d8cab2;border-radius:13px;background:#fffdf8;font-size:14.5px;color:#3a362e;cursor:pointer"><input type="checkbox" checked="{{ form.c0 }}" onChange="{{ onC0 }}" style="width:auto;margin-top:2px">I did not name a minor or identify them in a sensitive context.</label>
+        <label style="display:flex;gap:11px;align-items:flex-start;padding:14px;border:1px solid #d8cab2;border-radius:13px;background:#fffdf8;font-size:14.5px;color:#3a362e;cursor:pointer"><input type="checkbox" checked="{{ form.c1 }}" onChange="{{ onC1 }}" style="width:auto;margin-top:2px">I did not include private medical, addiction, or family details about an identifiable person.</label>
+        <label style="display:flex;gap:11px;align-items:flex-start;padding:14px;border:1px solid #d8cab2;border-radius:13px;background:#fffdf8;font-size:14.5px;color:#3a362e;cursor:pointer"><input type="checkbox" checked="{{ form.c2 }}" onChange="{{ onC2 }}" style="width:auto;margin-top:2px">This is a public, civic story - not a personal dispute or a complaint about a private individual.</label>
+      </div>
+      <sc-if value="{{ safetyWarn }}"><div style="margin-top:14px;background:#a3342914;border:1px solid #a3342959;border-radius:12px;padding:13px 15px;font-size:13.5px;color:#a33429">Please confirm all three before continuing - these protect you and the people in your story.</div></sc-if>
+      <div style="margin-top:22px;display:flex;gap:10px;flex-wrap:wrap"><button onClick="{{ back1 }}" style="border:1px solid #d8cab2;background:#fffdf8;color:#161616;border-radius:999px;padding:13px 22px;font-weight:700;font-size:15px;cursor:pointer">&larr; Back</button><button onClick="{{ toReview }}" style="border:none;background:#161616;color:#fff;border-radius:999px;padding:13px 24px;font-weight:700;font-size:15px;cursor:pointer">Next: Review &rarr;</button></div>
+      </sc-if>
+
+      <sc-if value="{{ step3 }}">
+      <div style="background:#fffaf1;border:1px solid #d8cab2;border-radius:16px;padding:24px">
+        <sc-if value="{{ hasPhoto }}" hint-placeholder-val="{{ false }}">{{ photoReviewEl }}</sc-if>
+        <h3 style="font-family:'Spectral',serif;font-weight:700;font-size:24px;margin:0 0 8px">{{ reviewTitle }}</h3>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:#8a857a;margin-bottom:14px">{{ reviewMeta }}</div>
+        <p style="font-size:15px;line-height:1.55;color:#3a362e;margin:0 0 8px">{{ reviewBody }}</p>
+      </div>
+      <p style="font-size:13.5px;color:#6b675e;margin:16px 0 0">{{ submitButtonNote }}</p>
+      <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap"><button onClick="{{ back2 }}" style="border:1px solid #d8cab2;background:#fffdf8;color:#161616;border-radius:999px;padding:13px 22px;font-weight:700;font-size:15px;cursor:pointer">&larr; Back</button><button onClick="{{ doSubmit }}" style="border:none;background:#19734a;color:#fff;border-radius:999px;padding:13px 26px;font-weight:700;font-size:15px;cursor:pointer">{{ submitButtonLabel }}</button></div>
+      </sc-if>
+    </div>
+    </sc-if>
+  </section>
+</div>
+</sc-if>
+
+<!-- ============ DIGEST ============ -->
+<sc-if value="{{ isDigest }}">
+<div style="">
+  <section style="max-width:820px;margin:0 auto;padding:48px 24px 70px">
+    <div style="font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:1.6px;font-size:12px;color:#6b675e;margin-bottom:14px">The Saturday Digest</div>
+    <h1 style="font-family:'Spectral',serif;font-weight:800;font-size:clamp(34px,4.6vw,52px);line-height:1;letter-spacing:-1.6px;margin:0 0 14px">The Good, the Bad, and the Real {{ cityName }}.</h1>
+    <p style="font-size:17px;line-height:1.5;color:#5a564d;max-width:640px;margin:0 0 30px">Every Saturday, a city briefing built from what residents are seeing on the ground: three wins, three concerns, one complicated story, three ways to help, and one question for the community.</p>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:24px">
+      <sc-for list="{{ digestOptions }}" as="opt" hint-placeholder-count="4">
+        <button onClick="{{ opt.onClick }}" style="text-align:left;border:1px solid {{ opt.border }};background:{{ opt.bg }};border-radius:14px;padding:16px 18px;cursor:pointer;box-shadow:{{ opt.shadow }}">
+          <strong style="display:block;font-family:'Spectral',serif;font-size:18px;margin-bottom:4px;color:#161616">{{ opt.title }}</strong>
+          <span style="font-size:13.5px;color:#5a564d;line-height:1.45">{{ opt.desc }}</span>
+        </button>
+      </sc-for>
+    </div>
+
+    <div style="background:#fffaf1;border:1px solid #d8cab2;border-radius:16px;padding:22px;display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+      <input value="{{ digestEmail }}" onInput="{{ onDigestEmail }}" placeholder="you@example.com" style="flex:1;min-width:220px;border:1px solid #d8cab2;background:#fffdf8;padding:13px;border-radius:11px;font-size:15px">
+      <button onClick="{{ subscribe }}" style="border:none;background:#161616;color:#fff;border-radius:999px;padding:13px 24px;font-weight:700;font-size:15px;cursor:pointer">{{ subscribeLabel }}</button>
+    </div>
+    <sc-if value="{{ subscribed }}"><div style="margin-top:14px;background:#19734a14;border:1px solid #19734a59;border-radius:12px;padding:13px 16px;font-size:14px;color:#19734a">You're subscribed to: <strong>{{ digestPref }}</strong>. Look for the first Saturday briefing in your inbox.</div></sc-if>
+
+    <div style="background:#161616;color:#fff;border-radius:18px;padding:26px;margin-top:30px">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:#c99a2e;margin-bottom:14px">Issue 01 preview - "The Good, the Bad, and the Real {{ cityName }}: Week One"</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;font-size:14.5px;line-height:1.5;color:#e7e1d4">
+        <div><strong style="color:#7fcfa5">3 wins</strong><br>Breakfast club, Sunday open gym, robotics mentors.</div>
+        <div><strong style="color:#e89a8f">3 concerns</strong><br>Streetlights near Monroe, downtown theft pattern, bus-stop safety.</div>
+        <div><strong style="color:#e8c46f">1 complicated story</strong><br>New shelter opened - more beds, poor neighbor communication.</div>
+        <div><strong style="color:#9fb8d6">1 question</strong><br>Where should Spokane add its next safe place for kids after school?</div>
+      </div>
+    </div>
+  </section>
+</div>
+</sc-if>
+
+<!-- ============ ABOUT ============ -->
+<sc-if value="{{ isAbout }}">
+<div style="">
+  <section style="max-width:760px;margin:0 auto;padding:56px 24px 70px">
+    <div style="font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:1.6px;font-size:12px;color:#6b675e;margin-bottom:14px">About</div>
+    <h1 style="font-family:'Spectral',serif;font-weight:800;font-size:clamp(34px,4.8vw,56px);line-height:1.02;letter-spacing:-1.8px;margin:0 0 24px">A clearer signal for your city.</h1>
+    <p style="font-family:'Spectral',serif;font-size:21px;line-height:1.6;color:#2b2820;margin:0 0 20px">Cities do not fail because nobody cares. They fail because the signal gets buried. Good work goes unnoticed. Problems become rumors. Residents see patterns long before institutions do - but there is no trusted place to send what they're seeing.</p>
+    <p style="font-family:'Spectral',serif;font-size:21px;line-height:1.6;color:#2b2820;margin:0 0 32px">Good News Bad News exists to close that gap.</p>
+    <div style="border-top:1px solid #d8cab2;padding-top:28px;display:grid;grid-template-columns:1fr 1fr;gap:24px">
+      <div><h3 style="font-family:'Spectral',serif;font-weight:700;font-size:22px;margin:0 0 8px">What it is</h3><p style="font-size:15.5px;line-height:1.55;color:#5a564d;margin:0">A moderated, community-powered signal system - part civic newsroom, part neighborhood early-warning system, part public square with rules.</p></div>
+      <div><h3 style="font-family:'Spectral',serif;font-weight:700;font-size:22px;margin:0 0 8px">What it is not</h3><p style="font-size:15.5px;line-height:1.55;color:#5a564d;margin:0">Not a complaint board. Not Nextdoor. Not a city portal. Not anonymous gossip. The point isn't to make {{ cityName }} look good or bad - it's to help the city see clearly.</p></div>
+    </div>
+    <div style="background:#fff8eb;border:1px solid #c99a2e80;border-radius:16px;padding:24px;margin-top:32px">
+      <h3 style="font-family:'Spectral',serif;font-weight:700;font-size:22px;margin:0 0 8px">Open, but not reckless.</h3>
+      <p style="font-size:15.5px;line-height:1.6;color:#3a362e;margin:0">Make it easy for residents to submit raw signal, but hard for unverified claims to become public harm. Local, but not small. Honest, but not cynical. Constructive, but not sanitized.</p>
+    </div>
+  </section>
+</div>
+</sc-if>
+
+<!-- ============ STANDARDS ============ -->
+<sc-if value="{{ isStandards }}">
+<div style="">
+  <section style="max-width:820px;margin:0 auto;padding:56px 24px 70px">
+    <div style="font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:1.6px;font-size:12px;color:#6b675e;margin-bottom:14px">Community Standards</div>
+    <h1 style="font-family:'Spectral',serif;font-weight:800;font-size:clamp(34px,4.6vw,52px);line-height:1.02;letter-spacing:-1.6px;margin:0 0 20px">Built for civic signal, not gossip.</h1>
+    <p style="font-size:18px;line-height:1.6;color:#3a362e;margin:0 0 36px">We publish stories, patterns, concerns, and opportunities that help the community understand itself and respond. We do not publish doxxing, threats, personal attacks, unsupported accusations, private information, or content designed to shame individuals.</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
+      <div style="background:#fffaf1;border:1px solid #a3342959;border-radius:16px;padding:22px">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:#a33429;margin-bottom:12px">Not allowed</div>
+        <ul style="margin:0;padding-left:18px;font-size:14.5px;line-height:1.8;color:#3a362e"><li>Doxxing or private addresses</li><li>Phone numbers / private emails</li><li>Unverified accusations against private individuals</li><li>Medical or private personal information</li><li>Threats, harassment, hate speech</li><li>Naming minors in sensitive contexts</li><li>Legal allegations without documentation</li><li>Unverified rumors</li></ul>
+      </div>
+      <div style="background:#fffaf1;border:1px solid #19734a59;border-radius:16px;padding:22px">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:#19734a;margin-bottom:12px">Allowed</div>
+        <ul style="margin:0;padding-left:18px;font-size:14.5px;line-height:1.8;color:#3a362e"><li>Firsthand observations</li><li>Concerns about places, systems & policies</li><li>Documented facts</li><li>Photos of public conditions</li><li>Constructive complaints</li><li>Community wins & resident experiences</li><li>Public meeting notes</li><li>Patterns noticed by multiple residents</li></ul>
+      </div>
+    </div>
+    <div style="background:#fbf4e6;border:1px solid #d8cab2;border-radius:16px;padding:24px;margin-top:24px">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:#9a6a12;margin-bottom:12px">Safer language pattern</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
+        <div><div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#a33429;margin-bottom:6px">Instead of</div><p style="font-size:14.5px;line-height:1.5;color:#5a564d;margin:0;font-style:italic">"This camp is full of criminals."</p></div>
+        <div><div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#19734a;margin-bottom:6px">We publish</div><p style="font-size:14.5px;line-height:1.5;color:#2b2820;margin:0">"Residents near the area reported safety and sanitation concerns. The submission is under review and may be combined with other reports into a broader pattern report."</p></div>
+      </div>
+    </div>
+  </section>
+</div>
+</sc-if>
+
+<!-- ============ SIGNAL MAP ============ -->
+<sc-if value="{{ isMap }}">
+<div style="">
+  <section style="max-width:1240px;margin:0 auto;padding:46px 24px 8px">
+    <div style="font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:1.6px;font-size:12px;color:#6b675e;margin-bottom:14px">{{ cityShort }} · Signal Map</div>
+    <h1 style="font-family:'Spectral',serif;font-weight:800;font-size:clamp(38px,5vw,60px);line-height:1;letter-spacing:-1.8px;margin:0 0 14px">Where {{ cityName }}'s stories are coming from.</h1>
+    <p style="font-size:18px;line-height:1.5;color:#5a564d;max-width:760px;margin:0 0 8px">Every published signal mapped to where it was reported. Pins are color-coded by type, so you can see at a glance where wins, concerns, and opportunities are clustering across the city.</p>
+  </section>
+  <section style="max-width:1240px;margin:0 auto;padding:16px 24px 64px">
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px">
+      <sc-for list="{{ mapLegend }}" as="leg" hint-placeholder-count="6">
+        <button onClick="{{ leg.onClick }}" style="display:flex;align-items:center;gap:8px;border:1px solid {{ leg.rowBorder }};background:{{ leg.rowBg }};border-radius:999px;padding:8px 14px;cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;letter-spacing:0.4px;color:#3a362e">
+          <span style="width:11px;height:11px;border-radius:999px;background:{{ leg.color }};display:inline-block;flex-shrink:0"></span>{{ leg.label }} <span style="color:#8a857a">{{ leg.count }}</span>
+        </button>
+      </sc-for>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 340px;gap:18px;align-items:start">
+      <div style="border:1px solid #d8cab2;border-radius:18px;overflow:hidden;box-shadow:0 10px 34px rgba(0,0,0,0.05)">
+        <div id="gnbn-map" style="width:100%;height:600px;background:#eee7d8"></div>
+      </div>
+      <aside style="background:#fffaf1;border:1px solid #d8cab2;border-radius:18px;padding:18px;max-height:633px;overflow:auto">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:#8a857a;margin-bottom:14px">{{ mapCountLine }}</div>
+        <div style="display:flex;flex-direction:column;gap:9px">
+          <sc-for list="{{ mapPosts }}" as="p" hint-placeholder-count="6">
+            <button onClick="{{ p.open }}" style="text-align:left;cursor:pointer;display:flex;gap:11px;align-items:flex-start;background:#fffdf8;border:1px solid #e4d8c2;border-radius:12px;padding:11px 12px">
+              <span style="flex-shrink:0;width:11px;height:11px;border-radius:999px;background:{{ p.catColor }};margin-top:4px"></span>
+              <span style="min-width:0;display:block">
+                <span style="display:block;font-family:'Spectral',serif;font-weight:700;font-size:15px;line-height:1.2;color:#161616">{{ p.title }}</span>
+                <span style="display:block;font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:#8a857a;margin-top:3px">{{ p.hood }} · {{ p.catLabel }}</span>
+              </span>
+            </button>
+          </sc-for>
+        </div>
+      </aside>
+    </div>
+  </section>
+</div>
+</sc-if>
+
+<!-- ============ PARTNERS ============ -->
+<sc-if value="{{ isPartners }}">
+<div style="">
+  <section style="max-width:1240px;margin:0 auto;padding:46px 24px 8px">
+    <div style="font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:1.6px;font-size:12px;color:#6b675e;margin-bottom:14px">For newsrooms &amp; local press</div>
+    <h1 style="font-family:'Spectral',serif;font-weight:800;font-size:clamp(38px,5.2vw,64px);line-height:0.98;letter-spacing:-2px;margin:0 0 18px;max-width:900px">Partner with the people who see it first.</h1>
+    <p style="font-size:19px;line-height:1.5;color:#3a362e;max-width:760px;margin:0 0 8px">Good News Bad News gives local newsrooms a steady, reviewed stream of resident signals - and gives citizen journalists the reach, mentorship, and editorial support to turn what they're seeing into real stories. Together you cover the city more completely than either can alone.</p>
+  </section>
+
+  <section style="max-width:1240px;margin:0 auto;padding:36px 24px 8px">
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:18px">
+      <div style="background:#fffaf1;border:1px solid #19734a59;border-left:5px solid #19734a;border-radius:16px;padding:24px">
+        <div style="font-family:'IBM Plex Mono',monospace;font-weight:600;letter-spacing:1.4px;font-size:12px;color:#19734a;text-transform:uppercase;margin-bottom:10px">For newsrooms</div>
+        <h3 style="font-family:'Spectral',serif;font-weight:700;font-size:23px;margin:0 0 8px;line-height:1.1">A reviewed signal feed.</h3>
+        <p style="font-size:14.5px;line-height:1.55;color:#5a564d;margin:0">Browse emerging stories before they break. Every signal is moderated, location-tagged, and labeled by verification status - a running tip line built by residents across the city.</p>
+      </div>
+      <div style="background:#fffaf1;border:1px solid #285d834d;border-left:5px solid #285d83;border-radius:16px;padding:24px">
+        <div style="font-family:'IBM Plex Mono',monospace;font-weight:600;letter-spacing:1.4px;font-size:12px;color:#285d83;text-transform:uppercase;margin-bottom:10px">For citizen journalists</div>
+        <h3 style="font-family:'Spectral',serif;font-weight:700;font-size:23px;margin:0 0 8px;line-height:1.1">Reach, mentorship &amp; a byline.</h3>
+        <p style="font-size:14.5px;line-height:1.55;color:#5a564d;margin:0">Residents who submit a signal can be paired with a partner reporter to expand it into a full story - with editorial guidance, fact-checking support, and credit for the person who saw it first.</p>
+      </div>
+      <div style="background:#fffaf1;border:1px solid #c99a2e80;border-left:5px solid #c99a2e;border-radius:16px;padding:24px">
+        <div style="font-family:'IBM Plex Mono',monospace;font-weight:600;letter-spacing:1.4px;font-size:12px;color:#9a6a12;text-transform:uppercase;margin-bottom:10px">For the community</div>
+        <h3 style="font-family:'Spectral',serif;font-weight:700;font-size:23px;margin:0 0 8px;line-height:1.1">Patterns get real reporting.</h3>
+        <p style="font-size:14.5px;line-height:1.55;color:#5a564d;margin:0">The trends residents surface get the depth they deserve instead of disappearing into a feed - and the public gets reporting grounded in what people are actually living.</p>
+      </div>
+    </div>
+  </section>
+
+  <section style="max-width:1240px;margin:0 auto;padding:50px 24px 8px">
+    <div style="font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:1.6px;font-size:12px;color:#6b675e;border-bottom:1px solid #d8cab2;padding-bottom:12px;margin-bottom:26px">How a partnership works</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:18px">
+      <div style="background:#fffaf1;border:1px solid #d8cab2;border-radius:18px;padding:22px">
+        <div style="font-family:'Spectral',serif;font-weight:800;font-size:34px;color:#9a6a12;line-height:1;margin-bottom:12px">1</div>
+        <h3 style="font-family:'Spectral',serif;font-weight:700;font-size:20px;margin:0 0 8px">Claim a signal</h3>
+        <p style="font-size:14px;line-height:1.5;color:#5a564d;margin:0">Editors browse the reviewed feed and flag the signals worth expanding into reporting.</p>
+      </div>
+      <div style="background:#fffaf1;border:1px solid #d8cab2;border-radius:18px;padding:22px">
+        <div style="font-family:'Spectral',serif;font-weight:800;font-size:34px;color:#9a6a12;line-height:1;margin-bottom:12px">2</div>
+        <h3 style="font-family:'Spectral',serif;font-weight:700;font-size:20px;margin:0 0 8px">Co-report with the resident</h3>
+        <p style="font-size:14px;line-height:1.5;color:#5a564d;margin:0">The original contributor is invited to work with a reporter - sharing context, photos, and sources.</p>
+      </div>
+      <div style="background:#fffaf1;border:1px solid #d8cab2;border-radius:18px;padding:22px">
+        <div style="font-family:'Spectral',serif;font-weight:800;font-size:34px;color:#9a6a12;line-height:1;margin-bottom:12px">3</div>
+        <h3 style="font-family:'Spectral',serif;font-weight:700;font-size:20px;margin:0 0 8px">Publish &amp; credit</h3>
+        <p style="font-size:14px;line-height:1.5;color:#5a564d;margin:0">The expanded story runs in the partner outlet and links back, crediting the citizen journalist.</p>
+      </div>
+      <div style="background:#fffaf1;border:1px solid #d8cab2;border-radius:18px;padding:22px">
+        <div style="font-family:'Spectral',serif;font-weight:800;font-size:34px;color:#9a6a12;line-height:1;margin-bottom:12px">4</div>
+        <h3 style="font-family:'Spectral',serif;font-weight:700;font-size:20px;margin:0 0 8px">Track the pattern</h3>
+        <p style="font-size:14px;line-height:1.5;color:#5a564d;margin:0">Related signals are bundled so one story can document a citywide pattern, not a single incident.</p>
+      </div>
+    </div>
+  </section>
+
+  <section style="max-width:1240px;margin:0 auto;padding:50px 24px 8px">
+    <div style="background:#161616;color:#fff;border-radius:24px;padding:42px;display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:start">
+      <div>
+        <h2 style="font-family:'Spectral',serif;font-weight:800;font-size:32px;line-height:1.05;letter-spacing:-0.8px;margin:0 0 14px">What partners get</h2>
+        <ul style="margin:0;padding-left:18px;font-size:15px;line-height:1.9;color:#e7e1d4">
+          <li>A moderated, location-tagged signal feed for your city</li>
+          <li>Early access to pattern reports before they're public</li>
+          <li>A pipeline of resident contributors and tips</li>
+          <li>Co-branded "In partnership with" labeling on stories</li>
+          <li>Shared editorial standards that protect contributors</li>
+        </ul>
+      </div>
+      <div style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.14);border-radius:16px;padding:24px">
+        <sc-if value="{{ partnerSent }}" hint-placeholder-val="{{ false }}">
+          <div style="text-align:center;padding:14px 4px">
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1.6px;text-transform:uppercase;color:#7fcfa5;margin-bottom:12px">Inquiry received</div>
+            <h3 style="font-family:'Spectral',serif;font-weight:700;font-size:24px;margin:0 0 10px">Thanks - we'll be in touch.</h3>
+            <p style="font-size:14.5px;line-height:1.55;color:#cfc8b9;margin:0">A member of the partnerships team will reach out about bringing your newsroom into the {{ cityName }} pilot.</p>
+          </div>
+        </sc-if>
+        <sc-if value="{{ partnerFormOpen }}" hint-placeholder-val="{{ true }}">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:#c99a2e;margin-bottom:16px">Become a launch partner</div>
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <input value="{{ partnerOrg }}" onInput="{{ onPartnerOrg }}" placeholder="Newsroom or organization" style="border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.06);color:#fff;padding:12px;border-radius:11px;font-size:14.5px">
+            <select value="{{ partnerCity }}" onChange="{{ onPartnerCity }}" style="border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.06);color:#fff;padding:12px;border-radius:11px;font-size:14.5px">
+              <option style="color:#161616">Spokane</option>
+              <option style="color:#161616">Honolulu</option>
+              <option style="color:#161616">Another city</option>
+            </select>
+            <input value="{{ partnerEmail }}" onInput="{{ onPartnerEmail }}" placeholder="Work email" style="border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.06);color:#fff;padding:12px;border-radius:11px;font-size:14.5px">
+            <textarea value="{{ partnerNote }}" onInput="{{ onPartnerNote }}" placeholder="What kind of stories does your newsroom cover?" style="border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.06);color:#fff;padding:12px;border-radius:11px;font-size:14.5px;min-height:84px;resize:vertical;font-family:'Public Sans',sans-serif"></textarea>
+            <button onClick="{{ sendPartner }}" style="border:none;background:#19734a;color:#fff;border-radius:999px;padding:13px 22px;font-weight:700;font-size:15px;cursor:pointer">Request a partnership call</button>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+  </section>
+
+  <section style="max-width:1240px;margin:0 auto;padding:34px 24px 64px">
+    <div style="background:#fbf4e6;border:1px solid #d8cab2;border-radius:16px;padding:22px 24px">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:#9a6a12;margin-bottom:10px">In conversation with newsrooms in Spokane &amp; Honolulu</div>
+      <p style="font-size:14.5px;line-height:1.55;color:#5a564d;margin:0">We're onboarding founding press partners in both launch cities - daily papers, weeklies, public radio, and independent local reporters. If your newsroom covers a community we're in, there's a seat at the table.</p>
+    </div>
+  </section>
+</div>
+</sc-if>
+
+<!-- ============ ADMIN ============ -->
+<sc-if value="{{ isAdmin }}">
+<div style="">
+  <section style="max-width:1340px;margin:0 auto;padding:44px 24px 70px">
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:16px;border-bottom:1px solid #d8cab2;padding-bottom:18px;margin-bottom:24px">
+      <div>
+        <div style="font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:1.6px;font-size:12px;color:#6b675e;margin-bottom:10px">Moderation · Internal</div>
+        <h1 style="font-family:'Spectral',serif;font-weight:800;font-size:clamp(30px,3.8vw,44px);line-height:1;letter-spacing:-1.4px;margin:0">Submission review board</h1>
+      </div>
+      <div style="display:flex;gap:18px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:#6b675e">
+        <span>Queue <strong style="color:#161616;font-size:16px">{{ statQueue }}</strong></span>
+        <span>Published <strong style="color:#161616;font-size:16px">{{ statPublished }}</strong></span>
+        <span>Flagged <strong style="color:#a33429;font-size:16px">{{ statFlagged }}</strong></span>
+      </div>
+    </div>
+    <p style="font-size:15px;line-height:1.5;color:#5a564d;max-width:760px;margin:0 0 26px">Every submission moves through automated risk screening and human review before publishing. Move a card right to advance it; publish to push it live to the public feed.</p>
+
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;align-items:start">
+      <div style="background:#fbf4e6;border:1px solid #d8cab2;border-radius:16px;padding:14px;min-height:200px">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1.2px;text-transform:uppercase;color:#6b675e;margin-bottom:12px;display:flex;justify-content:space-between"><span>New</span><span>{{ colNewCount }}</span></div>
+        <sc-for list="{{ colNew }}" as="item" hint-placeholder-count="2">
+          <div style="background:#fffaf1;border:1px solid #d8cab2;border-radius:12px;padding:13px;margin-bottom:10px">
+            <span style="font-family:'IBM Plex Mono',monospace;font-weight:600;letter-spacing:0.8px;font-size:10px;text-transform:uppercase;padding:3px 7px;border-radius:999px;color:{{ item.catColor }};background:{{ item.catBg }};border:1px solid {{ item.catBorder }}">{{ item.catLabel }}</span>
+            <h4 style="font-family:'Spectral',serif;font-weight:700;font-size:15px;line-height:1.2;margin:9px 0 6px">{{ item.title }}</h4>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:#8a857a;margin-bottom:8px">{{ item.metaLine }}</div>
+            <div style="font-size:12px;line-height:1.4;color:{{ item.scanColor }};background:{{ item.scanBg }};border-radius:8px;padding:8px;margin-bottom:10px">{{ item.scanMessage }}</div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap"><button onClick="{{ item.toReview }}" style="border:1px solid #d8cab2;background:#fffdf8;color:#161616;border-radius:8px;padding:6px 9px;font-size:11px;font-weight:700;cursor:pointer">Send to review &rarr;</button><button onClick="{{ item.reject }}" style="border:1px solid #a3342959;background:#a3342914;color:#a33429;border-radius:8px;padding:6px 9px;font-size:11px;font-weight:700;cursor:pointer">Reject</button></div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="background:#fbf4e6;border:1px solid #d8cab2;border-radius:16px;padding:14px;min-height:200px">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1.2px;text-transform:uppercase;color:#6b675e;margin-bottom:12px;display:flex;justify-content:space-between"><span>Human review</span><span>{{ colReviewCount }}</span></div>
+        <sc-for list="{{ colReview }}" as="item" hint-placeholder-count="1">
+          <div style="background:#fffaf1;border:1px solid #d8cab2;border-radius:12px;padding:13px;margin-bottom:10px">
+            <span style="font-family:'IBM Plex Mono',monospace;font-weight:600;letter-spacing:0.8px;font-size:10px;text-transform:uppercase;padding:3px 7px;border-radius:999px;color:{{ item.catColor }};background:{{ item.catBg }};border:1px solid {{ item.catBorder }}">{{ item.catLabel }}</span>
+            <h4 style="font-family:'Spectral',serif;font-weight:700;font-size:15px;line-height:1.2;margin:9px 0 6px">{{ item.title }}</h4>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:#8a857a;margin-bottom:10px">{{ item.metaLine }}</div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap"><button onClick="{{ item.toVerified }}" style="border:1px solid #19734a59;background:#19734a14;color:#19734a;border-radius:8px;padding:6px 9px;font-size:11px;font-weight:700;cursor:pointer">Mark verified &rarr;</button><button onClick="{{ item.toNew }}" style="border:1px solid #d8cab2;background:#fffdf8;color:#6b675e;border-radius:8px;padding:6px 9px;font-size:11px;font-weight:700;cursor:pointer">&larr; Back</button><button onClick="{{ item.reject }}" style="border:1px solid #a3342959;background:#a3342914;color:#a33429;border-radius:8px;padding:6px 9px;font-size:11px;font-weight:700;cursor:pointer">Reject</button></div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="background:#fbf4e6;border:1px solid #d8cab2;border-radius:16px;padding:14px;min-height:200px">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1.2px;text-transform:uppercase;color:#6b675e;margin-bottom:12px;display:flex;justify-content:space-between"><span>Verified</span><span>{{ colVerifiedCount }}</span></div>
+        <sc-for list="{{ colVerified }}" as="item" hint-placeholder-count="1">
+          <div style="background:#fffaf1;border:1px solid #d8cab2;border-radius:12px;padding:13px;margin-bottom:10px">
+            <span style="font-family:'IBM Plex Mono',monospace;font-weight:600;letter-spacing:0.8px;font-size:10px;text-transform:uppercase;padding:3px 7px;border-radius:999px;color:{{ item.catColor }};background:{{ item.catBg }};border:1px solid {{ item.catBorder }}">{{ item.catLabel }}</span>
+            <h4 style="font-family:'Spectral',serif;font-weight:700;font-size:15px;line-height:1.2;margin:9px 0 6px">{{ item.title }}</h4>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:#8a857a;margin-bottom:10px">{{ item.metaLine }}</div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap"><button onClick="{{ item.publish }}" style="border:none;background:#19734a;color:#fff;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:700;cursor:pointer">Publish to feed</button><button onClick="{{ item.toReview }}" style="border:1px solid #d8cab2;background:#fffdf8;color:#6b675e;border-radius:8px;padding:6px 9px;font-size:11px;font-weight:700;cursor:pointer">&larr; Back</button></div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="background:#fbf4e6;border:1px solid #d8cab2;border-radius:16px;padding:14px;min-height:200px">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1.2px;text-transform:uppercase;color:#6b675e;margin-bottom:12px;display:flex;justify-content:space-between"><span>Published</span><span>{{ colPublishedCount }}</span></div>
+        <sc-for list="{{ colPublished }}" as="item" hint-placeholder-count="2">
+          <div style="background:#fffaf1;border:1px solid #19734a40;border-radius:12px;padding:13px;margin-bottom:10px">
+            <span style="font-family:'IBM Plex Mono',monospace;font-weight:600;letter-spacing:0.8px;font-size:10px;text-transform:uppercase;padding:3px 7px;border-radius:999px;color:{{ item.catColor }};background:{{ item.catBg }};border:1px solid {{ item.catBorder }}">{{ item.catLabel }}</span>
+            <h4 style="font-family:'Spectral',serif;font-weight:700;font-size:15px;line-height:1.2;margin:9px 0 6px">{{ item.title }}</h4>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:#19734a;margin-bottom:8px">Live · {{ item.status }}</div>
+            <a href="{{ item.viewHref }}" style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#285d83;font-weight:600;text-decoration:none">View in feed &rarr;</a>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+    <div style="margin-top:22px"><button onClick="{{ resetDemo }}" style="border:1px solid #d8cab2;background:#fffdf8;color:#6b675e;border-radius:999px;padding:9px 16px;font-size:12.5px;font-weight:700;cursor:pointer">Reset demo data</button></div>
+  </section>
+</div>
+</sc-if>
+
+</main>
+
+<footer style="border-top:1px solid #d8cab2;margin-top:auto">
+  <div style="max-width:1240px;margin:0 auto;padding:34px 24px;display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap">
+    <div style="max-width:340px">
+      <div style="font-family:'Spectral',serif;font-weight:800;font-size:20px;letter-spacing:-0.4px;margin-bottom:8px"><span style="color:#19734a">Good News</span> <span style="color:#a33429">Bad News</span></div>
+      <p style="font-size:13px;line-height:1.55;color:#6b675e;margin:0">A civic signal platform helping cities see themselves clearly. Now live in Spokane and Honolulu. We review submissions before publication and report patterns, not rumors.</p>
+    </div>
+    <div style="display:flex;gap:48px;flex-wrap:wrap;font-size:13.5px">
+      <div style="display:flex;flex-direction:column;gap:8px"><span style="font-family:'IBM Plex Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#9a857a;margin-bottom:2px">Read</span><a href="#/latest" style="text-decoration:none;color:#3a362e">Latest</a><a href="#/good" style="text-decoration:none;color:#3a362e">Good News</a><a href="#/bad" style="text-decoration:none;color:#3a362e">Bad News</a><a href="#/both" style="text-decoration:none;color:#3a362e">Both</a></div>
+      <div style="display:flex;flex-direction:column;gap:8px"><span style="font-family:'IBM Plex Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#9a857a;margin-bottom:2px">Participate</span><a href="#/submit" style="text-decoration:none;color:#3a362e">Submit a Signal</a><a href="#/digest" style="text-decoration:none;color:#3a362e">Weekly Digest</a><a href="#/about" style="text-decoration:none;color:#3a362e">About</a><a href="#/standards" style="text-decoration:none;color:#3a362e">Community Standards</a></div>
+    </div>
+  </div>
+  <div style="border-top:1px solid #e4d8c2"><div style="max-width:1240px;margin:0 auto;padding:16px 24px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:#9a857a;letter-spacing:0.3px">Good News Bad News · A civic signal platform · Now live in Spokane &amp; Honolulu · We review submissions before publication. A submitted signal is not a verified fact.</div></div>
+</footer>
+
+</div>
+
+<template id="__bundler_thumbnail">
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <rect width="100" height="100" fill="#f4ecdd"/>
+  <circle cx="38" cy="50" r="13" fill="#19734a"/>
+  <circle cx="62" cy="50" r="13" fill="#a33429"/>
+</svg>
+</template></x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:900},&quot;paidModel&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;},&quot;showAdmin&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;},&quot;requireSafetyCheck&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;}}">
+class Component extends DCLogic {
+  state = {
+    route: (typeof location !== 'undefined' && location.hash) ? location.hash : '#/',
+    city: (typeof localStorage !== 'undefined' && localStorage.getItem('gnbn_city') === 'honolulu') ? 'honolulu' : 'spokane',
+    posts: null,
+    queue: null,
+    fCat: 'all', fTopic: 'All topics', fHood: 'All neighborhoods', fSearch: '', fSort: 'latest',
+    mapFilter: 'all',
+    step: 1,
+    form: this.blankForm(),
+    submitted: false, scanMessage: '', safetyWarn: false,
+    digestPref: 'All Signals', digestEmail: '', subscribed: false,
+    helpOpen: false, followed: {}, seenLocal: {},
+    partner: { org:'', city:'Spokane', email:'', note:'' }, partnerSent: false,
+  };
+
+  blankForm() {
+    const cfg = (this.CITIES && this.state) ? this.CITIES[this.state.city] : null;
+    const hood = cfg ? cfg.hoods[0] : 'Downtown';
+    return { title:'', type:'Good News', topic:'Schools', neighborhood:hood, cross:'', body:'',
+      tags:'', photo:'', photoName:'',
+      c0:false, c1:false, c2:false };
+  }
+
+  CAT = {
+    good:        { label:'Good News',    color:'#19734a', bg:'#19734a14', border:'#19734a59' },
+    bad:         { label:'Bad News',     color:'#a33429', bg:'#a3342914', border:'#a3342959' },
+    both:        { label:'Both',         color:'#8a5e0f', bg:'#c99a2e21', border:'#c99a2e80' },
+    opportunity: { label:'Opportunity',  color:'#285d83', bg:'#285d831a', border:'#285d834d' },
+    signal:      { label:'Signal',       color:'#5a564d', bg:'#5a564d12', border:'#5a564d40' },
+    pattern:     { label:'Pattern',      color:'#6b3fa0', bg:'#6b3fa014', border:'#6b3fa045' },
+  };
+  STATUS = {
+    'Submitted':'#8a857a', 'Under Review':'#9a6a12', 'Reviewed':'#285d83', 'Verified':'#19734a',
+    'Updated':'#285d83', 'Resolved':'#19734a', 'Background Signal':'#8a857a', 'Needs More Info':'#a33429',
+  };
+  TOPICS = ['Housing','Homelessness','Public safety','Schools','Youth','Health','Business','Jobs','Downtown','Transportation','Parks','Faith/community','Government','Recovery','Mental health','Events','Arts/culture','Environment'];
+  HOODS = ['Downtown','North Side','South Hill','Spokane Valley','West Central','East Central','Logan','Hillyard',"Browne's Addition"];
+
+  CITIES = {
+    spokane: { key:'spokane', name:'Spokane', region:'Washington', short:'Spokane, WA',
+      center:[47.6588,-117.4260], zoom:12, activeArea:'Downtown',
+      hoods:['Downtown','North Side','South Hill','Spokane Valley','West Central','East Central','Logan','Hillyard',"Browne's Addition"] },
+    honolulu: { key:'honolulu', name:'Honolulu', region:'Hawaiʻi', short:'Honolulu, HI',
+      center:[21.3045,-157.8480], zoom:12, activeArea:'Chinatown',
+      hoods:['Waikīkī','Kakaʻako','Chinatown','Kalihi','Mānoa','Kaimukī','Ala Moana','Kapālama','Salt Lake','Hawaiʻi Kai'] },
+  };
+  HOOD_COORDS = {
+    spokane: { 'Downtown':[47.6588,-117.4260],'North Side':[47.6920,-117.4090],'South Hill':[47.6290,-117.4040],'Spokane Valley':[47.6610,-117.2390],'West Central':[47.6720,-117.4430],'East Central':[47.6610,-117.3760],'Logan':[47.6700,-117.4030],'Hillyard':[47.7030,-117.3760],"Browne's Addition":[47.6540,-117.4400] },
+    honolulu: { 'Waikīkī':[21.2793,-157.8293],'Kakaʻako':[21.2950,-157.8540],'Chinatown':[21.3140,-157.8610],'Kalihi':[21.3340,-157.8730],'Mānoa':[21.3140,-157.8010],'Kaimukī':[21.2790,-157.8030],'Ala Moana':[21.2910,-157.8430],'Kapālama':[21.3260,-157.8770],'Salt Lake':[21.3520,-157.8870],'Hawaiʻi Kai':[21.2810,-157.7080] },
+  };
+  cityCfg() { return this.CITIES[this.state.city] || this.CITIES.spokane; }
+  cityHoods() { return this.cityCfg().hoods; }
+  coordFor(city, hood, id) {
+    const t = (this.HOOD_COORDS[city] && this.HOOD_COORDS[city][hood]) || (this.CITIES[city] || this.CITIES.spokane).center;
+    const hsh = String(id || '').split('').reduce((a,c) => a + c.charCodeAt(0), 0);
+    const dy = (((hsh * 37) % 100) / 100 - 0.5) * 0.011;
+    const dx = (((hsh * 61) % 100) / 100 - 0.5) * 0.015;
+    return { lat: t[0] + dy, lng: t[1] + dx };
+  }
+
+  typeToCat(t) {
+    const m = { 'Good News':'good','Bad News':'bad','Both':'both','Opportunity':'opportunity','Signal':'signal','Pattern / Trend':'pattern','Question':'signal' };
+    return m[t] || 'signal';
+  }
+
+  componentDidMount() {
+    window.addEventListener('hashchange', this._onHash = () => {
+      this.setState({ route: location.hash || '#/', helpOpen:false });
+      try { window.scrollTo(0, 0); } catch(e){}
+    });
+    let posts = null, queue = null, digest = null, sub = false;
+    try {
+      posts = JSON.parse(localStorage.getItem('gnbn_posts_v3') || 'null');
+      queue = JSON.parse(localStorage.getItem('gnbn_queue_v3') || 'null');
+      digest = localStorage.getItem('gnbn_digest_v1');
+      sub = localStorage.getItem('gnbn_sub_v1') === '1';
+    } catch(e){}
+    let seeded = false;
+    if (!posts) { posts = this.seedPosts(); seeded = true; }
+    if (!queue) { queue = this.seedQueue(); seeded = true; }
+    if (seeded) { try { localStorage.setItem('gnbn_posts_v3', JSON.stringify(posts)); localStorage.setItem('gnbn_queue_v3', JSON.stringify(queue)); } catch(e){} }
+    this.setState({ posts, queue, digestPref: digest || 'All Signals', subscribed: sub });
+  }
+  componentWillUnmount() {
+    if (this._onHash) window.removeEventListener('hashchange', this._onHash);
+    if (this._mapRetry) clearTimeout(this._mapRetry);
+    if (this._map) { try { this._map.remove(); } catch(e){} this._map = null; this._mapEl = null; this._markers = null; }
+  }
+
+  componentDidUpdate() {
+    if (this.page() === 'map') {
+      const key = [this.state.city, this.state.mapFilter, this.state.route, (this.state.posts || []).length].join('|');
+      if (!this._map || this._mapKey !== key) { this._mapKey = key; this.buildMap(); }
+    } else if (this._map) {
+      try { this._map.remove(); } catch(e){}
+      this._map = null; this._mapEl = null; this._markers = null; this._mapKey = null;
+    }
+  }
+
+  buildMap() {
+    if (this._mapRetry) { clearTimeout(this._mapRetry); this._mapRetry = null; }
+    if (typeof window === 'undefined' || !window.L) { this._mapRetry = setTimeout(() => this.buildMap(), 200); return; }
+    const el = document.getElementById('gnbn-map');
+    if (!el) { this._mapRetry = setTimeout(() => this.buildMap(), 150); return; }
+    const cfg = this.cityCfg();
+    // Always tear down any prior instance and recreate cleanly.
+    if (this._map) { try { this._map.remove(); } catch(e){} this._map = null; }
+    try { if (el._leaflet_id) el._leaflet_id = null; } catch(e){}
+    el.innerHTML = '';
+    const map = window.L.map(el, { scrollWheelZoom:false, attributionControl:true });
+    map.setView(cfg.center, cfg.zoom);
+    window.L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { maxZoom:19, subdomains:'abcd', attribution:'© OpenStreetMap · © CARTO' }).addTo(map);
+    const mf = this.state.mapFilter || 'all';
+    const posts = (this.state.posts || []).filter(p => p.city === this.state.city && typeof p.lat === 'number' && (mf === 'all' || p.cat === mf));
+    posts.forEach(p => {
+      const c = this.CAT[p.cat] || this.CAT.signal;
+      const m = window.L.circleMarker([p.lat, p.lng], { radius:9, color:'#fffaf1', weight:2.5, fillColor:c.color, fillOpacity:0.95 });
+      m.addTo(map);
+      const safe = String(p.title || '').replace(/</g,'&lt;');
+      m.bindPopup('<div style="font-family:\'Public Sans\',sans-serif;max-width:230px"><div style="font-family:\'IBM Plex Mono\',monospace;font-size:10px;letter-spacing:0.6px;text-transform:uppercase;color:' + c.color + ';margin-bottom:4px">' + c.label + ' · ' + p.hood + '</div><div style="font-family:\'Spectral\',serif;font-weight:700;font-size:15px;line-height:1.2;margin-bottom:8px;color:#161616">' + safe + '</div><a href="#/post/' + p.id + '" style="font-family:\'IBM Plex Mono\',monospace;font-size:11px;color:#19734a;font-weight:600;text-decoration:none">Read the signal →</a></div>');
+    });
+    this._map = map;
+    setTimeout(() => { try { map.invalidateSize(); } catch(e){} }, 150);
+  }
+
+  persist(posts, queue) {
+    try {
+      localStorage.setItem('gnbn_posts_v3', JSON.stringify(posts ?? this.state.posts));
+      localStorage.setItem('gnbn_queue_v3', JSON.stringify(queue ?? this.state.queue));
+    } catch(e){}
+  }
+
+  seedPosts() {
+    const PHOTOS = {
+      'park-cleanup': 'https://picsum.photos/seed/gnbnpark/900/560',
+      'streetlights-monroe': 'https://picsum.photos/seed/gnbnstreet/900/560',
+      'shelter-mixed': 'https://picsum.photos/seed/gnbnshelter/900/560',
+      'robotics-mentors': 'https://picsum.photos/seed/gnbnrobotics/900/560',
+      'hiring-20': 'https://picsum.photos/seed/gnbnjobs/900/560',
+    };
+    const P = (id,cat,title,summary,topics,hood,status,by,helpful,age,body,next) => ({
+      id, cat, title, summary, topics, hood, status, by, helpful, age,
+      photo: PHOTOS[id] || '',
+      body: body || [summary], next: next || 'This signal is open for more reports. Residents can add detail, and organizations can respond.'
+    });
+    const spokane = [
+      P('breakfast-club','good','A teacher started a quiet breakfast club before school','A local teacher noticed students arriving early with nowhere to go and built a simple morning table that has become a place of stability.',['Schools','Youth'],'North Side','Verified','Verified teacher',31,2,
+        ['A teacher at a North Side elementary school noticed a small group of students arriving 30–40 minutes before the doors opened, often without having eaten.','Rather than send them back outside, she set up a quiet table in the cafeteria with cereal, fruit, and a few board games. Word spread, and a handful of parents now drop off extra supplies each week.','Three months in, staff say the students who use the table arrive calmer and are less likely to be sent to the office before lunch.'],
+        'Verified through the school and two staff members. We are tracking whether other Spokane schools have informal versions of this that could be supported.'),
+      P('sunday-gym','good','A coach opened a Sunday gym for kids with nowhere to train','A volunteer coach is using open gym time to help students build discipline, confidence, and community on weekends.',['Youth','Parks'],'North Side','Reviewed','Coach contributor',22,3,null,
+        'Reviewed for standards. The coach has asked for help with equipment and a second adult volunteer - see the Opportunities feed.'),
+      P('hiring-20','good','A local business hired 20 young people for the summer','A downtown employer built a structured summer program pairing first jobs with mentorship.',['Jobs','Youth','Business'],'Downtown','Verified','Business owner',18,5,null,null),
+      P('park-cleanup','good','A park cleanup brought out 80 residents','A neighborhood-organized cleanup drew far more volunteers than expected, and organizers want to make it monthly.',['Parks','Environment'],'South Hill','Verified','Neighborhood volunteer',27,6,null,null),
+      P('warming-center','good','A church opened a warming center on the coldest nights','A faith community quietly opened its hall as a warming center, coordinating with two nearby nonprofits.',['Faith/community','Homelessness'],'West Central','Reviewed','Faith leader',15,7,null,null),
+      P('library-teens','good','The branch library became an after-school anchor','Staff report a steady, well-behaved crowd of teens using the branch for homework and a warm place to be.',['Youth','Schools'],'East Central','Reviewed','Resident',9,8,null,null),
+      P('streetlights-monroe','bad','More broken streetlights reported near Monroe','Multiple residents have reported dark blocks near Monroe and Montgomery; the issue has been submitted for review and may be updated as more information comes in.',['Public safety','Transportation'],'North Side','Under Review','3 residents',14,1,
+        ['Several residents independently reported that a stretch of blocks near Monroe and Montgomery has had multiple streetlights out for weeks.','One contributor walks the route at night and described specific intersections where visibility is poor. We have not independently confirmed the cause or the city status.','We are logging additional reports to understand how widespread the outage is before raising it as a pattern.'],
+        'We are collecting more location detail. If you have seen this too, add the specific cross-streets so we can map the affected area.'),
+      P('motel-block','bad','Responders are seeing repeat calls from the same motel block','A contributor describes a pattern of repeated emergency calls around one corridor and asks whether the city is tracking it clearly. No private names are published.',['Public safety','Health'],'Downtown','Under Review','Anonymous, privately verified',19,2,null,
+        'Reframed as a system-level pattern. We do not publish private individuals. We are checking whether this overlaps with other downtown reports.'),
+      P('downtown-theft','bad','Downtown businesses report more theft but little attention','Several businesses describe a rising sense of disorder that has not yet shown up in a formal citywide conversation.',['Business','Public safety','Downtown'],'Downtown','Under Review','Owner contributor',12,3,null,null),
+      P('bus-stop-dark','bad','A bus stop has become unsafe after dark','Riders report a specific stop where lighting and visibility have made waiting feel unsafe at night.',['Transportation','Public safety'],'East Central','Reviewed','Transit rider',11,4,null,null),
+      P('restroom-closed','bad','A public restroom has been closed for months','Park users report a restroom that has been locked for an extended period with no posted timeline.',['Parks','Government'],'Spokane Valley','Submitted','Resident',6,5,null,null),
+      P('bullying-near-school','bad','Parents report recurring conflict near a school','Several parents describe a recurring after-school issue near a campus and are asking for adult presence at dismissal.',['Schools','Youth'],'Hillyard','Under Review','2 parents',8,6,null,
+        'Handled carefully - no minors are named. We are checking whether the school is aware and what supervision exists at dismissal.'),
+      P('program-overwhelmed','bad','A food program says it is overwhelmed','A nonprofit reports demand outpacing supply and is asking for coordinated help rather than one-off donations.',['Homelessness','Health'],'West Central','Reviewed','Nonprofit staff',13,7,null,null),
+      P('shelter-mixed','both','A new shelter opened downtown - more beds, but poor communication','Good news: more beds came online. Bad news: neighbors say communication about the opening was poor. Both are true.',['Homelessness','Downtown'],'Downtown','Verified','Multiple contributors',24,2,
+        ['A new shelter opened downtown this month, adding a meaningful number of beds during a stretch of cold weather.','At the same time, several neighboring residents and businesses said they learned about the opening only after it happened, and that there was no clear point of contact for questions or concerns.','Both things appear to be true at once: a real increase in capacity, and a real breakdown in communication. We are tracking how the operator and neighbors work it out.'],
+        'We have reached out for the operator’s side and will update this story. Neighbors can submit specific questions they want answered.'),
+      P('housing-infra','both','New housing is going up, but neighbors worry about infrastructure','Construction is adding units the city needs, while nearby residents raise real concerns about traffic and drainage.',['Housing','Transportation'],'Spokane Valley','Reviewed','Resident',16,4,null,null),
+      P('downtown-traffic','both','Downtown foot traffic is up, but security costs are rising','More people are coming downtown - a genuine win - while some small businesses say they are spending more on security.',['Downtown','Business'],'Downtown','Reviewed','Owner contributor',14,5,null,null),
+      P('school-mental-health','both','A school added mental-health resources, but waitlists remain long','The added support is real and welcome; the waitlist shows the need is bigger than the new capacity.',['Schools','Mental health'],'South Hill','Verified','Teacher',17,6,null,null),
+      P('city-program-confusing','both','A new city program is helping people, but access is confusing','Residents who reached the program say it helped; others gave up navigating how to apply.',['Government','Health'],'East Central','Under Review','Resident',7,8,null,null),
+      P('robotics-mentors','opportunity','Mentors needed for after-school robotics and trades projects','Teachers and parents are asking for local builders, engineers, mechanics, and entrepreneurs to help students turn ideas into projects.',['Youth','Jobs','Schools'],'North Side','Reviewed','Volunteer opportunity',21,3,null,
+        'Two schools are ready to host. We are matching mentors now - respond with what you can offer.'),
+      P('cleanup-crews','opportunity','Neighborhood cleanup crews are forming around problem areas','Residents are organizing weekend cleanup walks and asking businesses, churches, and schools to coordinate supplies and volunteers.',['Public safety','Environment','Parks'],'Hillyard','Reviewed','Community action',13,4,null,null),
+      P('hiring-fair','opportunity','A local hiring fair needs employers and volunteers','Organizers want more employers with real openings and a few volunteers to help run the day.',['Jobs','Business'],'Downtown','Reviewed','Workforce program',10,6,null,null),
+      P('mentor-recovery','opportunity','A recovery program needs mentors who have been there','A peer-support program is looking for volunteers with lived experience and time to give.',['Recovery','Health'],'West Central','Reviewed','Nonprofit staff',12,7,null,null),
+      P('donation-drive','opportunity','A warm-clothing drive needs a drop-off host','Organizers have donors lined up but need a centrally located business willing to be a drop-off point.',['Faith/community','Homelessness'],'South Hill','Submitted','Resident',5,8,null,null),
+      P('pattern-bus-stops','pattern','Pattern: parents report safety concerns near three downtown bus stops','Several independent reports point to the same set of stops. We have combined them into one pattern report rather than publishing each as a separate claim.',['Public safety','Transportation','Schools'],'Downtown','Verified','Pattern report',29,3,
+        ['Over the past two weeks we received separate submissions from parents and a transit rider describing the same three downtown bus stops as feeling unsafe for kids after school.','No two reports name the same individuals, but they describe consistent conditions: poor lighting, loitering, and a lack of adult presence at dismissal times.','We are publishing this as a pattern - a confirmed cluster of reports - not as a verified claim about any specific person or single incident.'],
+        'We have shared the aggregated, de-identified pattern with the relevant agencies. Residents can keep adding location detail to sharpen the map.'),
+      P('pattern-corridor','pattern','Pattern: repeat 911 calls cluster on one downtown corridor','Multiple signals describe the same corridor. Combined into a de-identified pattern report for institutional response.',['Public safety','Health','Downtown'],'Downtown','Reviewed','Pattern report',20,5,null,null),
+      P('pattern-lunch','pattern','Pattern: several parents mention kids skipping lunch over cost or confusion','Independent reports from different schools suggest a shared barrier worth a closer look.',['Schools','Youth','Health'],'East Central','Under Review','Pattern report',15,7,null,null),
+    ];
+    const withCity = spokane.map(p => ({ ...p, city:'spokane', ...this.coordFor('spokane', p.hood, p.id) }));
+    return [...withCity, ...this.seedHonolulu()];
+  }
+
+  seedHonolulu() {
+    const H = (id,cat,title,summary,topics,hood,status,by,helpful,age,body,next) => ({
+      id, cat, title, summary, topics, hood, status, by, helpful, age,
+      photo: 'https://picsum.photos/seed/' + id + '/900/560',
+      body: body || [summary],
+      next: next || 'This signal is open for more reports. Residents can add detail, and organizations can respond.',
+      city:'honolulu', ...this.coordFor('honolulu', hood, id),
+    });
+    return [
+      H('hnl-beach-cleanup','good','Volunteers cleared two tons of debris from a Waikīkī shoreline','A weekend cleanup organized by local students and a dive shop pulled an unexpected amount of marine debris off one stretch of beach.',['Environment','Parks'],'Waikīkī','Verified','Beach hui volunteer',26,2,null,null),
+      H('hnl-keiki-surf','good','A retired lifeguard started a free keiki surf program','Saturday mornings, kids who could never afford lessons are learning ocean safety and how to surf from a longtime lifeguard.',['Youth','Parks'],'Hawaiʻi Kai','Reviewed','Volunteer coach',19,4,null,null),
+      H('hnl-kupuna-garden','good','A Mānoa church turned a vacant lot into a kūpuna garden','Elders and youth are growing kalo and vegetables together on land that sat empty for years.',['Faith/community','Health'],'Mānoa','Verified','Community organizer',22,5,null,null),
+      H('hnl-night-market','good',"Chinatown's night market is reviving small storefronts",'A monthly night market is bringing foot traffic back to blocks that had gone quiet, and several shops report their best months in years.',['Business','Arts/culture'],'Chinatown','Reviewed','Small-business owner',17,6,null,null),
+      H('hnl-flood-kalihi','bad','Repeat flooding is hitting the same Kalihi streets','Residents report that even moderate rain now floods the same low blocks, damaging cars and ground-floor units.',['Public safety','Environment'],'Kalihi','Under Review','3 residents',15,1,
+        ['Several residents along the same Kalihi blocks report that storm runoff now floods the street with even moderate rain.','They describe water entering ground-floor units and stalling cars, and say drains appear blocked or undersized.','We are collecting locations to understand how far the problem extends before raising it as a pattern.'],
+        'We are mapping the affected blocks. If you have seen this too, add the cross-streets and how high the water gets.'),
+      H('hnl-bus-cuts','bad','Riders say route cuts are stranding early-shift workers','Service reductions on a key route are leaving early-shift workers in Kapālama without a reliable way to get to work.',['Transportation','Jobs'],'Kapālama','Under Review','Transit riders',13,3,null,null),
+      H('hnl-reef-runoff','bad','Residents report runoff clouding the water after every storm','Snorkelers and paddlers describe brown plumes reaching the reef after heavy rain, and worry about long-term damage.',['Environment','Health'],'Hawaiʻi Kai','Reviewed','Ocean user',12,4,null,null),
+      H('hnl-vacancy-kaimuki','bad','Storefront vacancies are climbing along Waiʻalae Avenue','Several longtime businesses have closed, and residents worry the corridor is losing the mix that made it walkable.',['Business','Downtown'],'Kaimukī','Submitted','Resident',8,5,null,null),
+      H('hnl-rail-opening','both','The rail extension opened — more access, but fare confusion','Good news: a new segment of rail is carrying riders. Bad news: riders say fares and transfers are confusing and signage is thin.',['Transportation','Government'],'Salt Lake','Verified','Multiple contributors',23,2,
+        ['A new segment of the rail line opened this month, giving thousands of residents a faster way into town.','At the same time, riders report confusion about fares, transfers, and where to buy passes, with little staff present to help.','Both are true at once: real new access, and a rollout that is leaving some riders frustrated.'],
+        'We have reached out to the transit agency for clarification and will update. Riders can submit the specific stations where signage is unclear.'),
+      H('hnl-housing-kakaako','both','New Kakaʻako towers add homes, but locals fear being priced out','Construction is adding badly needed units while longtime residents worry the new housing is not built for them.',['Housing','Business'],'Kakaʻako','Reviewed','Resident',18,4,null,null),
+      H('hnl-tourism-return','both','Tourism is back in Waikīkī — revenue up, strain up too','Visitor spending has rebounded, helping workers and shops, while residents describe crowding and rising costs.',['Business','Downtown'],'Waikīkī','Reviewed','Owner contributor',16,5,null,null),
+      H('hnl-mentors-canoe','opportunity','A canoe club needs mentors for after-school paddling','Coaches want adults who can help run safe afternoon practices and teach ocean skills to keiki.',['Youth','Parks'],'Ala Moana','Reviewed','Volunteer opportunity',14,3,null,null),
+      H('hnl-food-hub','opportunity','A food-rescue hub needs drivers across the island','A nonprofit recovering unsold food needs volunteer drivers to get it to shelters and kūpuna before it spoils.',['Health','Homelessness'],'Kalihi','Reviewed','Nonprofit staff',12,4,null,null),
+      H('hnl-pattern-crosswalks','pattern','Pattern: pedestrian near-misses cluster on three Ala Moana crosswalks','Independent reports describe the same crosswalks as dangerous for kids and kūpuna. Combined into one de-identified pattern report.',['Public safety','Transportation'],'Ala Moana','Verified','Pattern report',21,3,
+        ['Over two weeks we received separate reports describing the same three crosswalks near Ala Moana as dangerous, especially for children and elders.','The reports describe short signal timing, turning vehicles, and poor visibility - without naming individuals.','We are publishing this as a pattern, a confirmed cluster of reports, rather than a single verified incident.'],
+        'We have shared the de-identified pattern with the relevant agency. Residents can keep adding detail to sharpen the map.'),
+    ];
+  }
+
+  seedQueue() {
+    const spokane = [
+      { id:'q1', wf:'New', cat:'bad', title:'Trash buildup recurring near Sprague and Napa', topic:'Public safety', hood:'East Central', by:'Resident', age:0,
+        body:['Residents report recurring trash buildup near Sprague and Napa over the last several weeks.'], status:'Submitted',
+        scan:{level:'clean', msg:'No risk flags. Describes a public condition, not a private individual. Ready for human review.'} },
+      { id:'q2', wf:'New', cat:'bad', title:'Concern about a downtown corridor', topic:'Public safety', hood:'Downtown', by:'Anonymous', age:0,
+        body:['A contributor raised a concern that named a specific individual and a private address.'], status:'Submitted',
+        scan:{level:'flag', msg:'Flagged: a private name and address were detected. Needs editing into system-level pattern language before it can advance.'} },
+      { id:'q3', wf:'Review', cat:'good', title:'Volunteers repainted a community center', topic:'Faith/community', hood:'West Central', by:'Volunteer', age:1,
+        body:['A group of volunteers spent a weekend repainting a tired community center used by youth programs.'], status:'Under Review',
+        scan:{level:'clean', msg:'No risk flags. Positive community signal.'} },
+      { id:'q4', wf:'Verified', cat:'opportunity', title:'Tutors needed for weekend reading program', topic:'Schools', hood:'Hillyard', by:'Nonprofit staff', age:1,
+        body:['A weekend reading program is looking for volunteer tutors who can commit to two hours on Saturdays.'], status:'Verified',
+        scan:{level:'clean', msg:'No risk flags. Verified with the host organization.'} },
+    ].map(q => ({ ...q, city:'spokane' }));
+    const honolulu = [
+      { id:'qh1', wf:'New', cat:'good', title:'Surfers organized a reef cleanup off Waikīkī', topic:'Environment', hood:'Waikīkī', by:'Resident', age:0,
+        body:['A group of surfers organized a volunteer reef cleanup and want help making it monthly.'], status:'Submitted',
+        scan:{level:'clean', msg:'No risk flags. Positive community signal. Ready for human review.'} },
+      { id:'qh2', wf:'Review', cat:'bad', title:'Flooding reported again on a Kalihi block', topic:'Public safety', hood:'Kalihi', by:'2 residents', age:1,
+        body:['Residents report repeat flooding on the same block after moderate rain.'], status:'Under Review',
+        scan:{level:'clean', msg:'No risk flags. Describes a public condition. In review.'} },
+    ].map(q => ({ ...q, city:'honolulu' }));
+    return [...spokane, ...honolulu];
+  }
+
+  // ---------- routing helpers ----------
+  page() {
+    const h = (this.state.route || '#/').replace(/^#/, '');
+    if (h.startsWith('/post/')) return 'post';
+    const map = { '/':'home','':'home','/latest':'feed','/good':'feed','/bad':'feed','/both':'feed',
+      '/map':'map','/partners':'partners',
+      '/submit':'submit','/digest':'digest','/about':'about','/standards':'standards','/admin':'admin' };
+    return map[h] || 'home';
+  }
+  feedCatFromRoute() {
+    const h = (this.state.route || '').replace(/^#/, '');
+    if (h === '/good') return 'good';
+    if (h === '/bad') return 'bad';
+    if (h === '/both') return 'both';
+    return null; // latest
+  }
+
+  decorate(p) {
+    const cat = this.CAT[p.cat] || this.CAT.signal;
+    const statusColor = this.STATUS[p.status] || '#8a857a';
+    return {
+      ...p,
+      catLabel: cat.label, catColor: cat.color, catBg: cat.bg, catBorder: cat.border,
+      status: p.status, statusColor, statusBorder: statusColor + '55',
+      metaLine: `${p.hood} · ${p.by} · ${p.age === 0 ? 'today' : p.age + 'd ago'}`,
+      helpfulLine: `${(this.state.seenLocal[p.id] ? p.helpful + 1 : p.helpful)} helpful`,
+      topics: p.topics,
+      hasPhoto: !!p.photo, photo: p.photo || '',
+      cardPhotoEl: p.photo ? React.createElement('img', { src: p.photo, alt:'', style:{ width:'calc(100% + 40px)', height:'150px', objectFit:'cover', margin:'-20px -20px 0', borderRadius:'16px 16px 0 0' } }) : null,
+      detailPhotoEl: p.photo ? React.createElement('img', { src: p.photo, alt:'', style:{ width:'100%', maxHeight:'400px', objectFit:'cover', borderRadius:'14px', marginBottom:'26px' } }) : null,
+      open: () => { location.hash = '#/post/' + p.id; },
+    };
+  }
+
+  filteredPosts() {
+    const { posts, fTopic, fHood, fSearch, fSort } = this.state;
+    if (!posts) return [];
+    const routeCat = this.feedCatFromRoute();
+    const cat = routeCat || this.state.fCat;
+    let list = posts.filter(p => p.city === this.state.city);
+    if (cat && cat !== 'all') list = list.filter(p => p.cat === cat);
+    if (fTopic && fTopic !== 'All topics') list = list.filter(p => (p.topics||[]).includes(fTopic));
+    if (fHood && fHood !== 'All neighborhoods') list = list.filter(p => p.hood === fHood);
+    if (fSearch && fSearch.trim()) {
+      const q = fSearch.toLowerCase();
+      list = list.filter(p => (p.title + ' ' + p.summary + ' ' + (p.topics||[]).join(' ')).toLowerCase().includes(q));
+    }
+    if (fSort === 'helpful') list.sort((a,b)=>b.helpful - a.helpful);
+    else list.sort((a,b)=>a.age - b.age);
+    return list;
+  }
+
+  // ---------- AI safety scan (heuristic) ----------
+  scan(text) {
+    const flags = [];
+    const t = (text || '');
+    if (/\b\d{3}[-.\s]?\d{3}[-.\s]?\d{4}\b/.test(t)) flags.push('a phone number');
+    if (/\b\d{1,6}\s+[A-Z][a-z]+\s+(St|Street|Ave|Avenue|Rd|Road|Blvd|Dr|Drive|Ln|Lane|Ct|Way|Pl)\b/i.test(t)) flags.push('a private street address');
+    if (/\b(criminal|pedophile|thief|stole|stealing|junkie|addict|drunk|crazy)\b/i.test(t)) flags.push('language that could be a personal accusation');
+    if (/\b(my kid|my son|my daughter|the student|a kid named|named)\s+[A-Z][a-z]+/i.test(t)) flags.push('what looks like a named individual or minor');
+    if (/@[\w.-]+\.\w+/.test(t)) flags.push('an email address');
+    if (/\b(cheat(ed|ing|er)?|affair|mistress|divorce|custody|ex-?(wife|husband|girlfriend|boyfriend)|home ?wrecker|sleeping with|hooking up)\b/i.test(t)) flags.push('a private personal dispute (this is a platform for public civic stories, not private relationships)');
+    if (flags.length === 0) {
+      return { level:'clean', msg:'No risk flags detected. This reads as a public, civic story about the city - it has been queued.' };
+    }
+    return { level:'flag', msg:'Our automated scan flagged ' + flags.join(', ') + '. We focus on public civic life, not private individuals or personal disputes - this will be reviewed and may be edited or held before publishing.' };
+  }
+
+  // ---------- form handlers ----------
+  setF(k, v) { this.setState(s => ({ form: { ...s.form, [k]: v }, safetyWarn:false })); }
+  goStep(n) { this.setState({ step:n, safetyWarn:false }); try{window.scrollTo(0,0);}catch(e){} }
+  readPhoto(e) {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => this.setState(s => ({ form: { ...s.form, photo: reader.result, photoName: file.name } }));
+    reader.readAsDataURL(file);
+  }
+
+  doSubmit() {
+    const f = this.state.form;
+    const scan = this.scan(f.title + ' ' + f.body);
+    const cat = this.typeToCat(f.type);
+    const tags = (f.tags||'').split(',').map(s=>s.trim()).filter(Boolean).slice(0,5);
+    const item = {
+      id: 'q' + Date.now(), wf:'New', cat, title: f.title || '(untitled signal)',
+      topic: f.topic, hood: f.neighborhood, by: 'Resident', age:0, tags, photo: f.photo || '',
+      body: [f.body || ''], status:'Submitted', scan, city: this.state.city,
+    };
+    Object.assign(item, this.coordFor(this.state.city, f.neighborhood, item.id));
+    const queue = [item, ...(this.state.queue || [])];
+    this.persist(null, queue);
+    this.setState({ queue, submitted:true, scanMessage: scan.msg });
+    try { window.scrollTo(0,0); } catch(e){}
+  }
+
+  // ---------- admin actions ----------
+  setWf(id, wf) {
+    const queue = (this.state.queue||[]).map(q => q.id===id ? {...q, wf} : q);
+    this.persist(null, queue); this.setState({ queue });
+  }
+  publishItem(id) {
+    const q = (this.state.queue||[]).find(x=>x.id===id);
+    if (!q) return;
+    const post = {
+      id: 'p-' + id, cat: q.cat, title: q.title,
+      summary: (q.body && q.body[0]) ? q.body[0] : q.title,
+      topics: [q.topic, ...((q.tags)||[])].filter(Boolean), hood: q.hood, status:'Verified', by: q.by, helpful: 0, age: 0,
+      photo: q.photo || '',
+      body: q.body && q.body.length ? q.body : [q.title],
+      next: 'Published from a resident submission after review. Residents can add more detail.',
+      city: q.city || 'spokane', ...this.coordFor(q.city || 'spokane', q.hood, q.id),
+    };
+    const posts = [post, ...(this.state.posts||[])];
+    const queue = (this.state.queue||[]).map(x => x.id===id ? {...x, wf:'Published'} : x);
+    this.persist(posts, queue);
+    this.setState({ posts, queue });
+  }
+  rejectItem(id) {
+    const queue = (this.state.queue||[]).filter(x=>x.id!==id);
+    this.persist(null, queue); this.setState({ queue });
+  }
+  resetDemo() {
+    const posts = this.seedPosts(), queue = this.seedQueue();
+    this.persist(posts, queue);
+    this.setState({ posts, queue, seenLocal:{}, followed:{} });
+  }
+
+  markSeen(id) {
+    const seenLocal = { ...this.state.seenLocal, [id]: !this.state.seenLocal[id] };
+    this.setState({ seenLocal });
+  }
+  toggleFollow(id) {
+    const followed = { ...this.state.followed, [id]: !this.state.followed[id] };
+    this.setState({ followed });
+  }
+  setCity(c) {
+    if (c !== 'spokane' && c !== 'honolulu') return;
+    try { localStorage.setItem('gnbn_city', c); } catch(e){}
+    this.setState({ city:c, fCat:'all', fTopic:'All topics', fHood:'All neighborhoods', fSearch:'', fSort:'latest', mapFilter:'all', form: this.blankForm(), step:1, submitted:false, helpOpen:false });
+    try { window.scrollTo(0,0); } catch(e){}
+  }
+  setMapFilter(k) { this.setState({ mapFilter:k }); }
+  setPartner(k, v) { this.setState(s => ({ partner: { ...s.partner, [k]: v }, partnerSent:false })); }
+  sendPartner() { this.setState({ partnerSent:true }); try { window.scrollTo(0,0); } catch(e){} }
+
+  renderVals() {
+    const page = this.page();
+    const ink = '#161616', muted = '#6b675e';
+    const navColor = (active) => active ? '#161616' : muted;
+    const routeCat = this.feedCatFromRoute();
+
+    // nav active states
+    const nav = {
+      navLatest: navColor(page==='feed' && !routeCat),
+      navGood: navColor(routeCat==='good'), navBad: navColor(routeCat==='bad'),
+      navBoth: navColor(routeCat==='both'), navDigest: navColor(page==='digest'),
+      navAbout: navColor(page==='about'), navStandards: navColor(page==='standards'),
+      navMap: navColor(page==='map'), navPartners: navColor(page==='partners'),
+      navAdmin: navColor(page==='admin'),
+    };
+
+    const showAdmin = this.props.showAdmin ?? true;
+    const paid = this.props.paidModel ?? false;
+
+    // posts (filtered to the active city)
+    const cfg = this.cityCfg();
+    const cityName = cfg.name, cityShort = cfg.short, cityRegion = cfg.region;
+    const allPosts = this.state.posts || [];
+    const cityPosts = allPosts.filter(p => p.city === this.state.city);
+    const decoratedAll = cityPosts.map(p => this.decorate(p));
+    const homePosts = decoratedAll.slice().sort((a,b)=>a.age-b.age).slice(0,6);
+    const feedPosts = this.filteredPosts().map(p => this.decorate(p));
+
+    // feed headings
+    const feedMeta = {
+      good: { kicker:'Good News', title:'The wins worth celebrating.', desc:'Improvements, inspiring people, promising programs, and the local momentum that usually goes unseen.' },
+      bad:  { kicker:'Bad News', title:'The problems that need attention.', desc:'Risks, gaps, failures, and early warning signs - surfaced constructively, reported as patterns rather than rumors.' },
+      both: { kicker:'Both', title:'Where progress and problems coexist.', desc:'The complicated stories that don’t fit a single label. Most real civic stories live here.' },
+      latest: { kicker:'The ' + cityName + ' Feed', title:'What residents are seeing.', desc:'Every signal reviewed before publication and labeled with its verification status. A submitted signal is not a verified fact.' },
+    };
+    const fm = feedMeta[routeCat || 'latest'];
+
+    // category chips (latest only)
+    const chipDefs = [['all','All'],['good','Good'],['bad','Bad'],['both','Both'],['opportunity','Opportunity'],['signal','Signal'],['pattern','Pattern']];
+    const catChips = chipDefs.map(([key,label]) => {
+      const active = this.state.fCat === key;
+      const c = key==='all' ? {color:'#161616',bg:'#161616',border:'#161616'} : (this.CAT[key]||this.CAT.signal);
+      return { label, color: active ? '#fff' : (key==='all'?'#161616':c.color),
+        bg: active ? (key==='all'?'#161616':c.color) : '#fffdf8',
+        border: active ? (key==='all'?'#161616':c.color) : '#d8cab2',
+        onClick: () => this.setState({ fCat: key }) };
+    });
+
+    // submit form
+    const steps = [1,2,3].map(n => {
+      const active = this.state.step === n;
+      const labels = {1:'1. Story',2:'2. Safety',3:'3. Review'};
+      return { label: labels[n], bg: active?'#161616':'#fffdf8', color: active?'#fff':muted, border: active?'#161616':'#d8cab2' };
+    });
+    const f = this.state.form;
+    const reviewCat = this.CAT[this.typeToCat(f.type)] || this.CAT.signal;
+
+    // digest options
+    const digDefs = [
+      ['Good Signals Only','Wins, youth stories, generosity, progress.'],
+      ['Warning Signals Only','Public-safety concerns, broken systems, rising needs.'],
+      ['Opportunity Signals Only','Places to volunteer, mentor, fund, or help.'],
+      ['All Signals','A balanced weekly view of Spokane.'],
+    ];
+    const digestOptions = digDefs.map(([title,desc]) => {
+      const active = this.state.digestPref === title;
+      return { title, desc, bg: active?'#fff8eb':'#fffaf1', border: active?'#c99a2e':'#d8cab2',
+        shadow: active?'inset 0 0 0 1px #c99a2e':'none',
+        onClick: () => { try{localStorage.setItem('gnbn_digest_v1',title);}catch(e){} this.setState({ digestPref: title }); } };
+    });
+
+    // admin columns (active city)
+    const queue = (this.state.queue || []).filter(q => q.city === this.state.city);
+    const decQ = (q) => {
+      const cat = this.CAT[q.cat]||this.CAT.signal;
+      const flag = q.scan && q.scan.level==='flag';
+      return { ...q, catLabel:cat.label, catColor:cat.color, catBg:cat.bg, catBorder:cat.border,
+        metaLine:`${q.hood} · ${q.topic} · ${q.by}`,
+        scanMessage: q.scan ? q.scan.msg : '',
+        scanColor: flag ? '#a33429' : '#19734a',
+        scanBg: flag ? '#a3342910' : '#19734a10',
+        viewHref: '#/post/p-' + q.id,
+        toReview: () => this.setWf(q.id,'Review'), toNew: () => this.setWf(q.id,'New'),
+        toVerified: () => this.setWf(q.id,'Verified'), publish: () => this.publishItem(q.id),
+        reject: () => this.rejectItem(q.id) };
+    };
+    const colNew = queue.filter(q=>q.wf==='New').map(decQ);
+    const colReview = queue.filter(q=>q.wf==='Review').map(decQ);
+    const colVerified = queue.filter(q=>q.wf==='Verified').map(decQ);
+    const colPublished = queue.filter(q=>q.wf==='Published').map(decQ);
+
+    // post detail
+    const hash = (this.state.route||'').replace(/^#/, '');
+    let detail = null, backHref = '#/latest';
+    if (page === 'post') {
+      const id = hash.replace('/post/', '');
+      const raw = allPosts.find(p=>p.id===id);
+      if (raw) {
+        detail = this.decorate(raw);
+        detail.body = raw.body || [raw.summary];
+        detail.nextStep = raw.next;
+        detail.seenCount = (this.state.seenLocal[id] ? raw.helpful+1 : raw.helpful);
+        detail.seen = () => this.markSeen(id);
+        detail.follow = () => this.toggleFollow(id);
+        detail.followLabel = this.state.followed[id] ? '✓ Following' : 'Follow this signal';
+      }
+    }
+
+    const statFlagged = queue.filter(q=>q.scan && q.scan.level==='flag' && q.wf!=='Published').length;
+
+    // ticker (city-aware)
+    const tickers = {
+      spokane: ['GOOD: free Sunday gym opens for North Spokane youth','WARNING: downtown businesses report repeat theft','OPPORTUNITY: mentors needed for after-school robotics','GOOD: a teacher starts a quiet breakfast club','WARNING: responders seeing repeat calls near one corridor','BOTH: new shelter adds beds, neighbors want better communication'],
+      honolulu: ['GOOD: volunteers clear two tons of debris off Waikīkī','WARNING: repeat flooding hits the same Kalihi streets','OPPORTUNITY: a food-rescue hub needs island-wide drivers','GOOD: a free keiki surf program opens in Hawaiʻi Kai','WARNING: pedestrian near-misses cluster at Ala Moana crosswalks','BOTH: rail extension opens - more access, but fare confusion'],
+    };
+    const tk = tickers[this.state.city] || tickers.spokane;
+    const tickerText = '  ·  ' + tk.join('  ·  ') + '  ·  ';
+
+    // signal map
+    const mapFilterVal = this.state.mapFilter || 'all';
+    const legDefs = [['all','All',{color:'#161616'}],['good','Good',this.CAT.good],['bad','Bad',this.CAT.bad],['both','Both',this.CAT.both],['opportunity','Opportunity',this.CAT.opportunity],['pattern','Pattern',this.CAT.pattern]];
+    const mapLegend = legDefs.map(([key,label,c]) => {
+      const active = mapFilterVal === key;
+      const count = key === 'all' ? decoratedAll.length : decoratedAll.filter(p => p.cat === key).length;
+      return { key, label, color:c.color, count, active,
+        rowBg: active ? '#fff' : '#fffaf1', rowBorder: active ? c.color : '#d8cab2',
+        onClick: () => this.setMapFilter(key) };
+    });
+    const mapPosts = decoratedAll.filter(p => mapFilterVal === 'all' || p.cat === mapFilterVal);
+    const mapCountLine = mapPosts.length + (mapPosts.length === 1 ? ' signal mapped' : ' signals mapped') + ' across ' + cityName;
+
+    // partners
+    const partnerS = this.state.partner;
+
+    return {
+      ...nav, showAdmin,
+      isHome: page==='home', isFeed: page==='feed', isSubmit: page==='submit',
+      isDigest: page==='digest', isAbout: page==='about', isStandards: page==='standards',
+      isAdmin: page==='admin' && showAdmin, isPost: page==='post',
+      isMap: page==='map', isPartners: page==='partners',
+      city: this.state.city, cityName, cityShort, cityRegion, activeArea: cfg.activeArea,
+      onCity: (e)=>this.setCity(e.target.value),
+      spokaneHoods: this.CITIES.spokane.hoods.length, honoluluHoods: this.CITIES.honolulu.hoods.length,
+      goSpokane: ()=>{ this.setCity('spokane'); location.hash='#/map'; },
+      goHonolulu: ()=>{ this.setCity('honolulu'); location.hash='#/map'; },
+      mapLegend, mapPosts, mapCountLine, mapFilter: mapFilterVal,
+      partnerOrg: partnerS.org, partnerCity: partnerS.city, partnerEmail: partnerS.email, partnerNote: partnerS.note, partnerSent: this.state.partnerSent,
+      onPartnerOrg:(e)=>this.setPartner('org',e.target.value), onPartnerCity:(e)=>this.setPartner('city',e.target.value),
+      onPartnerEmail:(e)=>this.setPartner('email',e.target.value), onPartnerNote:(e)=>this.setPartner('note',e.target.value),
+      sendPartner:()=>this.sendPartner(), partnerFormOpen: !this.state.partnerSent,
+
+      statPublished: cityPosts.length, statQueue: queue.filter(q=>q.wf!=='Published').length, statFlagged,
+      tickerText, homePosts,
+
+      // feed
+      feedKicker: fm.kicker, feedTitle: fm.title, feedDesc: fm.desc,
+      showCatChips: !routeCat, catChips,
+      topicOptions: ['All topics', ...this.TOPICS], hoodOptions: ['All neighborhoods', ...this.HOODS],
+      fSearch: this.state.fSearch, fTopic: this.state.fTopic, fHood: this.state.fHood, fSort: this.state.fSort,
+      onSearch: (e)=>this.setState({fSearch:e.target.value}),
+      onTopic: (e)=>this.setState({fTopic:e.target.value}),
+      onHood: (e)=>this.setState({fHood:e.target.value}),
+      onSort: (e)=>this.setState({fSort:e.target.value}),
+      feedPosts, feedEmpty: feedPosts.length===0,
+      feedCountLine: feedPosts.length + (feedPosts.length===1?' signal':' signals'),
+
+      // detail
+      detail, backHref,
+      helpOpen: this.state.helpOpen,
+      onHelp: ()=>this.setState({helpOpen:!this.state.helpOpen}),
+      submitHelp: ()=>this.setState({helpOpen:false}),
+
+      // submit
+      submitFeeLine: paid ? 'Submitting a signal costs $0.50 to reduce spam.' : 'Submitting is free.',
+      submitted: this.state.submitted, formOpen: !this.state.submitted,
+      scanMessage: this.state.scanMessage,
+      steps, step1:this.state.step===1, step2:this.state.step===2, step3:this.state.step===3,
+      form: this.state.form, safetyWarn: this.state.safetyWarn,
+      hasPhoto: !!this.state.form.photo, noPhoto: !this.state.form.photo, photoName: this.state.form.photoName,
+      photoThumbEl: this.state.form.photo ? React.createElement('img', { src:this.state.form.photo, alt:'preview', style:{ width:'84px', height:'84px', objectFit:'cover', borderRadius:'9px', border:'1px solid #d8cab2' } }) : null,
+      photoReviewEl: this.state.form.photo ? React.createElement('img', { src:this.state.form.photo, alt:'preview', style:{ width:'100%', maxHeight:'240px', objectFit:'cover', borderRadius:'12px', border:'1px solid #d8cab2', marginBottom:'16px' } }) : null,
+      topicList: this.TOPICS, hoodList: this.HOODS,
+      onTitle:(e)=>this.setF('title',e.target.value), onBody:(e)=>this.setF('body',e.target.value),
+      onType:(e)=>this.setF('type',e.target.value), onTopic2:(e)=>this.setF('topic',e.target.value),
+      onHoodField:(e)=>this.setF('neighborhood',e.target.value), onCross:(e)=>this.setF('cross',e.target.value),
+      onTags:(e)=>this.setF('tags',e.target.value),
+      onPhoto:(e)=>this.readPhoto(e), removePhoto:()=>this.setState(s=>({form:{...s.form,photo:'',photoName:''}})),
+      onC0:(e)=>this.setF('c0',e.target.checked), onC1:(e)=>this.setF('c1',e.target.checked),
+      onC2:(e)=>this.setF('c2',e.target.checked),
+      next2:()=>this.goStep(2),
+      toReview:()=>{ const okSafety = (this.props.requireSafetyCheck ?? true) ? (f.c0&&f.c1&&f.c2) : true; if(!okSafety){ this.setState({safetyWarn:true}); return; } this.goStep(3); },
+      back1:()=>this.goStep(1), back2:()=>this.goStep(2),
+      reviewTitle: f.title || '(untitled signal)',
+      reviewMeta: `${reviewCat.label} · ${f.topic} · ${f.neighborhood}`,
+      reviewBody: f.body || 'No description entered.',
+      submitButtonLabel: paid ? 'Pay $0.50 & submit for review' : 'Submit for review',
+      submitButtonNote: paid ? 'In the live product this opens checkout, then the signal enters moderation.' : 'Your signal goes straight to the moderation queue - nothing publishes automatically.',
+      doSubmit:()=>this.doSubmit(), resetForm:()=>{ this.setState({ form:this.blankForm(), step:1, submitted:false }); },
+
+      // digest
+      digestOptions, digestPref: this.state.digestPref, digestEmail: this.state.digestEmail,
+      onDigestEmail:(e)=>this.setState({digestEmail:e.target.value}),
+      subscribe:()=>{ try{localStorage.setItem('gnbn_sub_v1','1');}catch(e){} this.setState({subscribed:true}); },
+      subscribed: this.state.subscribed,
+      subscribeLabel: this.state.subscribed ? 'Update subscription' : 'Subscribe',
+
+      // admin
+      colNew, colReview, colVerified, colPublished,
+      colNewCount: colNew.length, colReviewCount: colReview.length, colVerifiedCount: colVerified.length, colPublishedCount: colPublished.length,
+      resetDemo:()=>this.resetDemo(),
+    };
+  }
+}
+</script>
+</body>
+</html>
