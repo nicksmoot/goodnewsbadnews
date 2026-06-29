@@ -1,25 +1,75 @@
-# CODING AGENTS: READ THIS FIRST
+# Good News Bad News
 
-This is a **handoff bundle** from Claude Design (claude.ai/design).
+A civic signal platform where residents submit the wins, concerns, patterns, and
+opportunities they're seeing around them. Submissions are reviewed and organized so a
+community can see what's working, what needs attention, and where to act next.
+**Now live in two cities: Spokane, WA and Honolulu, HI.**
 
-A user mocked up designs in HTML/CSS/JS using an AI design tool, then exported this bundle so a coding agent can implement the designs for real.
+This is the production implementation of the Claude Design prototype. It's a
+**Next.js 14 (App Router) + React + TypeScript** app that recreates the design
+pixel-for-pixel with full feature parity.
 
-## What you should do — IMPORTANT
+## Running locally
 
-**Read the chat transcripts first.** There are 3 chat transcript(s) in `chats/`. The transcripts show the full back-and-forth between the user and the design assistant — they tell you **what the user actually wants** and **where they landed** after iterating. Don't skip them. The final HTML files are the output, but the chat is where the intent lives.
+```bash
+npm install
+npm run dev      # http://localhost:3000
+npm run build && npm run start   # production build
+```
 
-**Read `project/index.html` in full.** The user had this file open when they triggered the handoff, so it's almost certainly the primary design they want built. Read it top to bottom — don't skim. Then **follow its imports**: open every file it pulls in (shared components, CSS, scripts) so you understand how the pieces fit together before you start implementing.
+The map basemap (CARTO/OpenStreetMap tiles) and the Google Fonts need network access;
+everything else works offline. Demo content persists to the browser via `localStorage`.
 
-**If anything is ambiguous, ask the user to confirm before you start implementing.** It's much cheaper to clarify scope up front than to build the wrong thing.
+## What's implemented
 
-## About the design files
+| Route | Screen |
+|---|---|
+| `/` | Home — pitch, two-city launch cards, headline ticker, how-it-works, category cards, latest signals, submit CTA |
+| `/latest` `/good` `/bad` `/both` | Feed — search + topic + neighborhood + sort filters; category chips on Latest |
+| `/map` | Signal Map — Leaflet, color-coded pins by category, clickable legend filter + synced side list |
+| `/post/[id]` | Post detail — body, "what happens next", *I've seen this too / I can help / Follow* actions |
+| `/submit` | 3-step submit flow (Story → Safety → Review) with photo upload + automated safety scan |
+| `/digest` | Weekly digest signup with preference + Issue-01 preview |
+| `/partners` | Newsroom partnership pitch + inquiry form |
+| `/about` `/standards` | Mission + community standards |
+| `/admin` | Moderation board — New → Human review → Verified → Published |
 
-The design medium is **HTML/CSS/JS** — these are prototypes, not production code. Your job is to **recreate them pixel-perfectly** in whatever technology makes sense for the target codebase (React, Vue, native, whatever fits). Match the visual output; don't copy the prototype's internal structure unless it happens to fit.
+**Working loops:** the submit form runs a deterministic safety scan (flags phone numbers,
+addresses, accusatory language, named individuals, emails, private disputes), drops the
+signal into the moderation queue, where an admin advances it New → Review → Verified →
+Publish; published items appear in the public feed and on the map. Everything is
+**city-scoped** — the header switcher re-filters the feed, map, submit defaults, digest,
+and admin queue, each city with its own dataset.
 
-**Don't render these files in a browser or take screenshots unless the user asks you to.** Everything you need — dimensions, colors, layout rules — is spelled out in the source. Read the HTML and CSS directly; a screenshot won't tell you anything they don't.
+## Project structure
 
-## Bundle contents
+```
+app/                 # routes (App Router) — one folder per screen
+components/           # Header, Footer, Feed, SignalMap, cards
+lib/
+  data.ts            # types, design tokens, seed data (both cities), scan(), decorate()
+  store.tsx          # client store + localStorage persistence (React context)
+  selectors.ts       # city scoping + feed filtering
+  config.ts          # product flags (see below)
+project/  chats/      # original Claude Design bundle: prototype source + transcripts
+```
 
-- `README.md` — this file
-- `chats/` — conversation transcripts (read these!)
-- `project/` — the `Good News Bad News civic platform` project files (HTML prototypes, assets, components)
+## Configurable flags (`lib/config.ts`)
+
+Ported from the prototype's `data-props`:
+
+- **`paidModel`** (`false`) — turn on the paid-submission flow (Stripe one-time $0.50 anti-spam fee).
+- **`showAdmin`** (`true`) — show the Moderation link. *Client convenience only — enforce admin access server-side.*
+- **`requireSafetyCheck`** (`true`) — require the three resident safety attestations before a submission can advance.
+
+## Wiring up the backend
+
+The demo fakes payments, the digest, and moderation persistence with `localStorage`.
+`project/design_handoff_gnbn/INTEGRATION.md` maps every touchpoint to a concrete
+production hook (Stripe Checkout + Billing, Resend/Postmark + Vercel Cron for the digest,
+admin role gating, map geocoding, photo uploads). The seams in this codebase that those
+docs reference: `submitSignal()` / `publishItem()` / `setWf()` in `lib/store.tsx`, the
+`/admin` route, and the `config` flags above.
+
+`project/design_handoff_gnbn/DESIGN_REFERENCE.md` is the single source of truth for colors,
+type, spacing, and per-screen specs.
