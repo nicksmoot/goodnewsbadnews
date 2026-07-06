@@ -1,14 +1,43 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import "leaflet/dist/leaflet.css";
+import { Analytics } from "@vercel/analytics/react";
 import { StoreProvider } from "@/lib/store";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { SITE, siteUrl } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "Good News Bad News — A civic signal platform",
-  description:
-    "A civic signal platform where residents submit the wins, concerns, patterns, and opportunities they're seeing. Now live in Spokane and Honolulu.",
+  metadataBase: new URL(siteUrl()),
+  title: {
+    default: `${SITE.name} — ${SITE.tagline}`,
+    template: `%s · ${SITE.name}`,
+  },
+  description: SITE.description,
+  applicationName: SITE.name,
+  keywords: ["local news", "civic", "Spokane", "Honolulu", "community", "signals", "neighborhood"],
+  alternates: {
+    canonical: "/",
+    types: { "application/rss+xml": `${siteUrl()}/feed.xml` },
+  },
+  openGraph: {
+    type: "website",
+    siteName: SITE.name,
+    title: `${SITE.name} — ${SITE.tagline}`,
+    description: SITE.description,
+    url: siteUrl(),
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `${SITE.name} — ${SITE.tagline}`,
+    description: SITE.description,
+  },
+  robots: { index: true, follow: true },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#f4ecdd",
+  colorScheme: "light",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -21,15 +50,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600;700;800&family=Public+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap"
           rel="stylesheet"
         />
+        <link rel="alternate" type="application/rss+xml" title="Good News Bad News" href="/feed.xml" />
       </head>
       <body>
+        <a href="#main" className="gnbn-skip">Skip to content</a>
         <StoreProvider>
           <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
             <Header />
-            <main style={{ flex: 1 }}>{children}</main>
+            <main id="main" style={{ flex: 1 }}>{children}</main>
             <Footer />
           </div>
         </StoreProvider>
+        <Analytics />
       </body>
     </html>
   );

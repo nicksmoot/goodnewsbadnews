@@ -35,6 +35,55 @@ img { max-width: 100%; }
   from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: none; }
 }
+@keyframes gnbn-shimmer {
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+/* Accessibility: visible focus ring + skip link + screen-reader-only text */
+:where(a, button, input, select, textarea):focus-visible {
+  outline: 2px solid #19734a;
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+.gnbn-skip {
+  position: absolute;
+  left: -9999px;
+  top: 8px;
+  z-index: 100;
+  background: #161616;
+  color: #fff;
+  padding: 10px 16px;
+  border-radius: 999px;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 13px;
+  text-decoration: none;
+}
+.gnbn-skip:focus {
+  left: 12px;
+}
+.gnbn-sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+.gnbn-skeleton {
+  background: linear-gradient(90deg, #f0e7d5 25%, #f6efe0 37%, #f0e7d5 63%);
+  background-size: 800px 100%;
+  animation: gnbn-shimmer 1.4s infinite linear;
+  border-radius: 16px;
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+}
 
 /* Leaflet popup typography to match the brand */
 .leaflet-popup-content-wrapper { border-radius: 12px; }

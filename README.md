@@ -41,6 +41,26 @@ Publish; published items appear in the public feed and on the map. Everything is
 **city-scoped** — the header switcher re-filters the feed, map, submit defaults, digest,
 and admin queue, each city with its own dataset.
 
+## Best-in-class layer (SEO, sharing, performance, growth)
+
+- **SEO:** per-page metadata, `sitemap.xml` (88 URLs), `robots.txt`, and JSON-LD
+  `NewsArticle` structured data. Story, topic, and neighborhood pages are
+  statically pre-rendered (SSG) so they're crawlable and fast.
+- **Sharing:** every story generates a **branded 1200×630 OpenGraph image** and
+  Twitter/OG card, plus a Copy-link / X / Facebook / Email share row.
+- **RSS:** `/feed.xml` — a real syndication feed of the latest signals.
+- **Performance:** `next/image` for photos, loading skeletons (no hydration flash),
+  and Vercel Analytics.
+- **Accessibility:** skip link, visible focus rings, alt text, ARIA states,
+  and `prefers-reduced-motion` support.
+- **Growth:** feed "load more" pagination, a **Trending this week** rail, and
+  **topic** (`/topic/[slug]`) + **neighborhood** (`/neighborhood/[slug]`) landing
+  pages for local-SEO long-tail, linked from every story and the footer.
+
+> **Set your domain:** add `NEXT_PUBLIC_SITE_URL=https://your-domain.com` in Vercel
+> → Project → Settings → Environment Variables so canonical URLs, the sitemap, RSS,
+> and OG tags point at the real host. (Falls back to the Vercel deploy URL.)
+
 ## Project structure
 
 ```

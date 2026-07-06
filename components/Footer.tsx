@@ -1,6 +1,10 @@
 import Link from "next/link";
+import { slugify } from "@/lib/slug";
 
 const linkStyle = { textDecoration: "none", color: "#3a362e" } as const;
+
+const FOOTER_TOPICS = ["Public safety", "Housing", "Schools", "Homelessness", "Business"];
+const FOOTER_HOODS = ["Downtown", "Chinatown"];
 
 export default function Footer() {
   return (
@@ -33,6 +37,17 @@ export default function Footer() {
             <Link href="/digest" style={linkStyle}>Weekly Digest</Link>
             <Link href="/about" style={linkStyle}>About</Link>
             <Link href="/standards" style={linkStyle}>Community Standards</Link>
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 11, textTransform: "uppercase", letterSpacing: "1px", color: "#9a857a", marginBottom: 2 }}>Explore</span>
+            <Link href="/map" style={linkStyle}>Signal Map</Link>
+            <Link href="/partners" style={linkStyle}>For Newsrooms</Link>
+            {FOOTER_TOPICS.map((t) => (
+              <Link key={t} href={`/topic/${slugify(t)}`} style={linkStyle}>{t}</Link>
+            ))}
+            {FOOTER_HOODS.map((h) => (
+              <Link key={h} href={`/neighborhood/${slugify(h)}`} style={linkStyle}>{h}</Link>
+            ))}
           </div>
         </div>
       </div>

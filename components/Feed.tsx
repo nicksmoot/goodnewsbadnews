@@ -1,11 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useStore, useCityEffect } from "@/lib/store";
 import { CatKey, CAT, TOPICS, HOODS, cityCfg } from "@/lib/data";
 import { filterPosts, decorateList, FeedFilters } from "@/lib/selectors";
-import { FeedCard } from "@/components/cards";
+import { FeedCard, SkeletonCards } from "@/components/cards";
+
+const PAGE_SIZE = 12;
 
 const CHIP_DEFS: [string, string][] = [
   ["all", "All"], ["good", "Good"], ["bad", "Bad"], ["both", "Both"],
@@ -25,19 +27,38 @@ const selectStyle: React.CSSProperties = {
 
 const BLANK: FeedFilters = { fCat: "all", fTopic: "All topics", fHood: "All neighborhoods", fSearch: "", fSort: "latest" };
 
-export default function Feed({ routeCat }: { routeCat: CatKey | null }) {
-  const { posts, city, seenLocal } = useStore();
-  const [f, setF] = useState<FeedFilters>(BLANK);
+interface FeedProps {
+  routeCat: CatKey | null;
+  fixedTopic?: string;
+  fixedHood?: string;
+  heading?: { kicker: string; title: string; desc: string };
+}
 
-  // Reset filters when the active city changes (matches the prototype's setCity).
-  useCityEffect(city, () => setF(BLANK));
+export default function Feed({ routeCat, fixedTopic, fixedHood, heading }: FeedProps) {
+  const { posts, city, seenLocal, ready } = useStore();
+  const initial: FeedFilters = {
+    ...BLANK,
+    fTopic: fixedTopic || BLANK.fTopic,
+    fHood: fixedHood || BLANK.fHood,
+  };
+  const [f, setF] = useState<FeedFilters>(initial);
+  const [visible, setVisible] = useState(PAGE_SIZE);
+
+  // Reset filters / pagination when the active city changes.
+  useCityEffect(city, () => { setF(initial); setVisible(PAGE_SIZE); });
+  // Reset pagination whenever the filters change.
+  const filterKey = `${routeCat}|${f.fCat}|${f.fTopic}|${f.fHood}|${f.fSearch}|${f.fSort}`;
+  useEffect(() => { setVisible(PAGE_SIZE); }, [filterKey]);
 
   const cfg = cityCfg(city);
-  const meta = routeCat
+  const meta = heading
+    ? heading
+    : routeCat
     ? FEED_META[routeCat]
     : { kicker: "The " + cfg.name + " Feed", title: "What residents are seeing.", desc: "Every signal reviewed before publication and labeled with its verification status. A submitted signal is not a verified fact." };
 
-  const feedPosts = decorateList(filterPosts(posts, city, routeCat, f), seenLocal);
+  const allPosts = decorateList(filterPosts(posts, city, routeCat, f), seenLocal);
+  const feedPosts = allPosts.slice(0, visible);
   const showChips = !routeCat;
 
   return (
@@ -95,12 +116,19 @@ export default function Feed({ routeCat }: { routeCat: CatKey | null }) {
       {/* Grid */}
       <section style={{ maxWidth: 1240, margin: "0 auto", padding: "24px 24px 64px" }}>
         <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 12, color: "#8a857a", letterSpacing: "0.4px", marginBottom: 18 }}>
-          {feedPosts.length} {feedPosts.length === 1 ? "signal" : "signals"}
+          {ready ? `${allPosts.length} ${allPosts.length === 1 ? "signal" : "signals"}` : "Loading signals…"}
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 18 }}>
-          {feedPosts.map((p) => <FeedCard key={p.id} post={p} />)}
+          {ready ? feedPosts.map((p) => <FeedCard key={p.id} post={p} />) : <SkeletonCards count={6} />}
         </div>
-        {feedPosts.length === 0 && (
+        {ready && allPosts.length > visible && (
+          <div style={{ display: "flex", justifyContent: "center", marginTop: 30 }}>
+            <button onClick={() => setVisible((v) => v + PAGE_SIZE)} style={{ border: "1px solid #161616", background: "transparent", color: "#161616", borderRadius: 999, padding: "12px 26px", fontWeight: 700, fontSize: 15, cursor: "pointer" }}>
+              Load more signals ({allPosts.length - visible} more)
+            </button>
+          </div>
+        )}
+        {ready && allPosts.length === 0 && (
           <div style={{ textAlign: "center", padding: "60px 20px", color: "#8a857a", fontSize: 16 }}>
             No signals match these filters yet. <Link href="/submit" style={{ color: "#19734a", fontWeight: 700 }}>Submit one &rarr;</Link>
           </div>

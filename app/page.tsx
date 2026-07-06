@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useStore } from "@/lib/store";
 import { cityCfg, CITIES } from "@/lib/data";
 import { cityPosts, cityQueue, decorateList } from "@/lib/selectors";
-import { HomeCard } from "@/components/cards";
+import { HomeCard, SkeletonCards } from "@/components/cards";
 
 const TICKERS: Record<string, string[]> = {
   spokane: [
@@ -40,12 +40,13 @@ const howCard = (n: string, title: string, body: string) => (
 );
 
 export default function HomePage() {
-  const { posts, queue, city, seenLocal, setCity } = useStore();
+  const { posts, queue, city, seenLocal, setCity, ready } = useStore();
   const router = useRouter();
   const cfg = cityCfg(city);
 
   const cp = cityPosts(posts, city);
   const homePosts = decorateList([...cp].sort((a, b) => a.age - b.age).slice(0, 6), seenLocal);
+  const trending = decorateList([...cp].sort((a, b) => b.helpful - a.helpful).slice(0, 5), seenLocal);
   const statPublished = cp.length;
   const statQueue = cityQueue(queue, city).filter((q) => q.wf !== "Published").length;
 
@@ -147,6 +148,23 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Trending this week */}
+      <section className="gnbn-section" style={{ maxWidth: 1240, margin: "0 auto", padding: "50px 24px 10px" }}>
+        <div style={{ ...kicker(""), borderBottom: "1px solid #d8cab2", paddingBottom: 12, marginBottom: 22 }}>Trending this week in {cfg.name}</div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 14 }}>
+          {(ready ? trending : []).map((p, i) => (
+            <Link key={p.id} href={`/post/${p.id}`} style={{ textDecoration: "none", color: "inherit", background: "#fffaf1", border: "1px solid #d8cab2", borderRadius: 14, padding: 16, display: "flex", flexDirection: "column", gap: 8, minHeight: 150 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+                <span style={{ fontFamily: "'Spectral',serif", fontWeight: 800, fontSize: 22, color: p.catColor, lineHeight: 1 }}>{i + 1}</span>
+                <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 10, color: "#19734a", fontWeight: 600 }}>{p.helpfulLine}</span>
+              </div>
+              <span style={{ fontFamily: "'Spectral',serif", fontWeight: 700, fontSize: 15, lineHeight: 1.2 }}>{p.title}</span>
+              <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 10, color: "#8a857a", marginTop: "auto" }}>{p.catLabel} · {p.hood}</span>
+            </Link>
+          ))}
+        </div>
+      </section>
+
       {/* Latest signals */}
       <section className="gnbn-section" style={{ maxWidth: 1240, margin: "0 auto", padding: "50px 24px 10px" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", borderBottom: "1px solid #d8cab2", paddingBottom: 12, marginBottom: 26, gap: 16, flexWrap: "wrap" }}>
@@ -154,7 +172,7 @@ export default function HomePage() {
           <Link href="/latest" style={{ textDecoration: "none", fontSize: 13.5, fontWeight: 700, color: "#19734a" }}>See the full feed &rarr;</Link>
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 18 }}>
-          {homePosts.map((p) => <HomeCard key={p.id} post={p} />)}
+          {ready ? homePosts.map((p) => <HomeCard key={p.id} post={p} />) : <SkeletonCards count={6} minHeight={210} />}
         </div>
       </section>
 

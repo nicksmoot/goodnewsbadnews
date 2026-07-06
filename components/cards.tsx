@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { DecoratedPost } from "@/lib/data";
 
 export function CatBadge({ post, small }: { post: DecoratedPost; small?: boolean }) {
@@ -32,6 +33,22 @@ export function StatusBadge({ post }: { post: DecoratedPost }) {
   );
 }
 
+export function SkeletonCards({ count = 6, minHeight = 230 }: { count?: number; minHeight?: number }) {
+  return (
+    <>
+      {Array.from({ length: count }).map((_, i) => (
+        <div key={i} aria-hidden style={{ background: "#fffaf1", border: "1px solid #d8cab2", borderRadius: 16, padding: 20, minHeight, display: "flex", flexDirection: "column", gap: 12 }}>
+          <div className="gnbn-skeleton" style={{ width: 90, height: 20, borderRadius: 999 }} />
+          <div className="gnbn-skeleton" style={{ width: "85%", height: 22 }} />
+          <div className="gnbn-skeleton" style={{ width: "100%", height: 14 }} />
+          <div className="gnbn-skeleton" style={{ width: "70%", height: 14 }} />
+          <div className="gnbn-skeleton" style={{ width: 120, height: 12, marginTop: "auto" }} />
+        </div>
+      ))}
+    </>
+  );
+}
+
 const cardBase: React.CSSProperties = {
   cursor: "pointer", background: "#fffaf1", border: "1px solid #d8cab2", borderRadius: 16,
   padding: 20, display: "flex", flexDirection: "column", textDecoration: "none", color: "inherit",
@@ -55,12 +72,9 @@ export function FeedCard({ post }: { post: DecoratedPost }) {
   return (
     <Link href={`/post/${post.id}`} style={{ ...cardBase, gap: 11, minHeight: 230 }}>
       {post.hasPhoto && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={post.photo}
-          alt=""
-          style={{ width: "calc(100% + 40px)", height: 150, objectFit: "cover", margin: "-20px -20px 0", borderRadius: "16px 16px 0 0" }}
-        />
+        <div style={{ position: "relative", width: "calc(100% + 40px)", height: 150, margin: "-20px -20px 0", borderRadius: "16px 16px 0 0", overflow: "hidden" }}>
+          <Image src={post.photo} alt={post.title} fill sizes="(max-width: 860px) 100vw, 380px" style={{ objectFit: "cover" }} />
+        </div>
       )}
       <div style={{ display: "flex", gap: 7, flexWrap: "wrap" }}>
         <CatBadge post={post} />
