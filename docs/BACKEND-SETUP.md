@@ -9,10 +9,10 @@ This wires the app to a real Postgres database with email/password accounts
 1. Vercel → your project → **Storage** tab → **Create Database** → **Postgres**.
 2. Accept the defaults and **connect it to the `goodnewsbadnews` project**
    (all environments: Production, Preview, Development).
-3. This automatically adds the DB connection env vars to the project —
-   including `POSTGRES_PRISMA_URL` and `POSTGRES_URL_NON_POOLING`, which is
-   what Prisma uses. (If your integration named them differently, set those two
-   variables to the **pooled** and **direct** connection strings respectively.)
+3. This automatically adds the DB connection env vars to the project. The
+   Neon integration provides `DATABASE_URL` (pooled) and `DATABASE_URL_UNPOOLED`
+   (direct), which is what `prisma/schema.prisma` uses. **Leave the "Custom
+   Prefix" field blank** when connecting, so the variable names aren't renamed.
 
 ## 2. Add the auth secret
 
