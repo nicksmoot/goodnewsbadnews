@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { useStore } from "@/lib/store";
 import { CityKey } from "@/lib/data";
 import { config } from "@/lib/config";
@@ -11,6 +12,7 @@ const MUTED = "#6b675e";
 
 export default function Header() {
   const { city, setCity } = useStore();
+  const { status } = useSession();
   const pathname = usePathname() || "/";
 
   const navColor = (active: boolean) => (active ? INK : MUTED);
@@ -77,6 +79,9 @@ export default function Header() {
           {link("/partners", "Partners", is("/partners"))}
           {config.showAdmin &&
             link("/admin", "Moderation", is("/admin"), { fontFamily: "'IBM Plex Mono',monospace", fontSize: 12 })}
+          {status === "authenticated"
+            ? link("/account", "Account", is("/account"))
+            : link("/signin", "Sign in", is("/signin"))}
           <Link
             href="/submit"
             style={{ textDecoration: "none", background: "#161616", color: "#fff", borderRadius: 999, padding: "9px 16px", fontWeight: 700, marginLeft: 6 }}

@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import "leaflet/dist/leaflet.css";
 import { Analytics } from "@vercel/analytics/react";
+import Providers from "@/components/Providers";
 import { StoreProvider } from "@/lib/store";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -54,13 +55,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         <a href="#main" className="gnbn-skip">Skip to content</a>
-        <StoreProvider>
-          <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
-            <Header />
-            <main id="main" style={{ flex: 1 }}>{children}</main>
-            <Footer />
-          </div>
-        </StoreProvider>
+        <Providers>
+          <StoreProvider>
+            <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+              <Header />
+              <main id="main" style={{ flex: 1 }}>{children}</main>
+              <Footer />
+            </div>
+          </StoreProvider>
+        </Providers>
         <Analytics />
       </body>
     </html>

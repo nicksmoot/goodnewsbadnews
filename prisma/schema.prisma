@@ -1,0 +1,35 @@
+// Good News Bad News — data model.
+// Provider: Postgres (Vercel Postgres in production; the Vercel integration
+// supplies POSTGRES_PRISMA_URL / POSTGRES_URL_NON_POOLING automatically).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("POSTGRES_PRISMA_URL")
+  directUrl = env("POSTGRES_URL_NON_POOLING")
+}
+
+model User {
+  id           String  @id @default(cuid())
+  email        String  @unique
+  name         String?
+  passwordHash String
+
+  // Membership / billing (wired to Stripe in a later stage).
+  plan               String    @default("free") // "free" | "member"
+  stripeCustomerId   String?   @unique
+  subscriptionStatus String? // Stripe status: active, canceled, past_due, ...
+  currentPeriodEnd   DateTime?
+
+  // Monthly post quota (members get 15/month, then $0.50 each).
+  postsThisPeriod Int      @default(0)
+  periodStart     DateTime @default(now())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([email])
+}
