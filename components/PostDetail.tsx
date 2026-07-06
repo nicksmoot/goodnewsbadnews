@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
+import { useSession } from "next-auth/react";
 import { useStore } from "@/lib/store";
 import { decorate } from "@/lib/data";
 import { slugify } from "@/lib/slug";
@@ -15,9 +16,12 @@ const chipLink: React.CSSProperties = {
 
 export default function PostDetail({ id }: { id: string }) {
   const { posts, seenLocal, followed, markSeen, toggleFollow, ready } = useStore();
+  const { data: session, status } = useSession();
   const [helpOpen, setHelpOpen] = useState(false);
 
   const raw = posts.find((p) => p.id === id);
+  const isMember = session?.user?.plan === "member";
+  const signedIn = status === "authenticated";
 
   if (!raw) {
     return (
@@ -50,14 +54,36 @@ export default function PostDetail({ id }: { id: string }) {
           </div>
         )}
 
-        {detail.body.map((para, i) => (
+        {(isMember ? detail.body : detail.body.slice(0, 1)).map((para, i) => (
           <p key={i} style={{ fontFamily: "'Spectral',serif", fontSize: 19, lineHeight: 1.62, color: "#2b2820", margin: "0 0 20px" }}>{para}</p>
         ))}
 
-        <div style={{ background: "#fbf4e6", border: "1px solid #d8cab2", borderRadius: 16, padding: 22, margin: "8px 0 24px" }}>
-          <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 11, letterSpacing: "1.4px", textTransform: "uppercase", color: "#9a6a12", marginBottom: 10 }}>What happens next</div>
-          <p style={{ fontSize: 15, lineHeight: 1.55, color: "#3a362e", margin: 0 }}>{detail.next}</p>
-        </div>
+        {!isMember && status !== "loading" && detail.body.length > 1 && (
+          <div className="gnbn-dark-panel" style={{ background: "#161616", color: "#fff", borderRadius: 20, padding: 30, margin: "4px 0 28px" }}>
+            <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase", color: "#c99a2e", marginBottom: 12 }}>Members read the full story</div>
+            <h2 style={{ fontFamily: "'Spectral',serif", fontWeight: 800, fontSize: 24, lineHeight: 1.12, margin: "0 0 10px" }}>The rest of this story is for members.</h2>
+            <p style={{ fontSize: 15, lineHeight: 1.55, color: "#cfc8b9", margin: "0 0 18px", maxWidth: 520 }}>
+              $5/month unlocks every full story and pattern report in the feed, plus 15 signal submissions a month included (then $0.50 each).
+            </p>
+            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+              <Link href={signedIn ? "/account" : `/signin?callbackUrl=/post/${id}`} style={{ textDecoration: "none", background: "#19734a", color: "#fff", borderRadius: 999, padding: "12px 22px", fontWeight: 700, fontSize: 14.5 }}>
+                {signedIn ? "Become a member" : "Sign in to continue"}
+              </Link>
+              {!signedIn && (
+                <Link href="/signin?callbackUrl=/account" style={{ textDecoration: "none", border: "1px solid rgba(255,255,255,0.45)", color: "#fff", borderRadius: 999, padding: "12px 22px", fontWeight: 700, fontSize: 14.5 }}>
+                  Become a member
+                </Link>
+              )}
+            </div>
+          </div>
+        )}
+
+        {(isMember || detail.body.length <= 1) && (
+          <div style={{ background: "#fbf4e6", border: "1px solid #d8cab2", borderRadius: 16, padding: 22, margin: "8px 0 24px" }}>
+            <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 11, letterSpacing: "1.4px", textTransform: "uppercase", color: "#9a6a12", marginBottom: 10 }}>What happens next</div>
+            <p style={{ fontSize: 15, lineHeight: 1.55, color: "#3a362e", margin: 0 }}>{detail.next}</p>
+          </div>
+        )}
 
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center", marginBottom: 22 }}>
           <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 11, letterSpacing: "1.2px", textTransform: "uppercase", color: "#8a857a", marginRight: 2 }}>Filed under</span>

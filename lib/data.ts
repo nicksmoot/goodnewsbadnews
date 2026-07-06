@@ -3,6 +3,8 @@
 // Ported faithfully from the design prototype (GoodNewsBadNews.dc.html).
 // ============================================================================
 
+import { BODIES } from "./bodies";
+
 export type CatKey =
   | "good"
   | "bad"
@@ -255,7 +257,7 @@ function buildSpokane(): Post[] {
   return rows.map(([id, cat, title, summary, topics, hood, status, by, helpful, age, body, next]) => ({
     id, cat, title, summary, topics, hood, status, by, helpful, age,
     photo: SPOKANE_PHOTOS[id] || "",
-    body: body || [summary],
+    body: body || BODIES[id] || [summary],
     next: next || DEFAULT_NEXT,
     city: "spokane" as CityKey,
     ...coordFor("spokane", hood, id),
@@ -288,7 +290,7 @@ function buildHonolulu(): Post[] {
   return rows.map(([id, cat, title, summary, topics, hood, status, by, helpful, age, body, next]) => ({
     id, cat, title, summary, topics, hood, status, by, helpful, age,
     photo: "https://picsum.photos/seed/" + id + "/900/560",
-    body: body || [summary],
+    body: body || BODIES[id] || [summary],
     next: next || DEFAULT_NEXT,
     city: "honolulu" as CityKey,
     ...coordFor("honolulu", hood, id),

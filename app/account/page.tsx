@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import SignOutButton from "@/components/SignOutButton";
+import ActivityPanel from "@/components/ActivityPanel";
 
 export const dynamic = "force-dynamic";
 
@@ -49,6 +50,8 @@ export default async function AccountPage() {
           </button>
         </div>
       )}
+
+      <ActivityPanel />
 
       <div style={{ marginTop: 26, display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
         <SignOutButton />

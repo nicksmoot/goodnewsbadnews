@@ -6,10 +6,13 @@ import {
   seedPosts, seedQueue, scan, typeToCat, coordFor,
 } from "./data";
 
-const K_POSTS = "gnbn_posts_v3";
-const K_QUEUE = "gnbn_queue_v3";
+// v4: seed stories carry full article bodies (bump forces a reseed).
+const K_POSTS = "gnbn_posts_v4";
+const K_QUEUE = "gnbn_queue_v4";
 const K_CITY = "gnbn_city";
 const K_DIGEST = "gnbn_digest_v1";
+const K_SEEN = "gnbn_seen_v1";
+const K_FOLLOW = "gnbn_follow_v1";
 const K_SUB = "gnbn_sub_v1";
 
 export interface SubmitForm {
@@ -82,6 +85,8 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       q = JSON.parse(localStorage.getItem(K_QUEUE) || "null");
       digest = localStorage.getItem(K_DIGEST);
       sub = localStorage.getItem(K_SUB) === "1";
+      setSeenLocal(JSON.parse(localStorage.getItem(K_SEEN) || "{}"));
+      setFollowed(JSON.parse(localStorage.getItem(K_FOLLOW) || "{}"));
     } catch {}
     let seeded = false;
     if (!p) { p = seedPosts(); seeded = true; }
@@ -114,10 +119,18 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   };
 
   const markSeen = (id: string) =>
-    setSeenLocal((s) => ({ ...s, [id]: !s[id] }));
+    setSeenLocal((s) => {
+      const next = { ...s, [id]: !s[id] };
+      try { localStorage.setItem(K_SEEN, JSON.stringify(next)); } catch {}
+      return next;
+    });
 
   const toggleFollow = (id: string) =>
-    setFollowed((s) => ({ ...s, [id]: !s[id] }));
+    setFollowed((s) => {
+      const next = { ...s, [id]: !s[id] };
+      try { localStorage.setItem(K_FOLLOW, JSON.stringify(next)); } catch {}
+      return next;
+    });
 
   const setDigestPref = (pref: string) => {
     try { localStorage.setItem(K_DIGEST, pref); } catch {}

@@ -20,6 +20,10 @@ function blankForm(hood: string): SubmitForm {
 
 const TYPES = ["Good News", "Bad News", "Both", "Opportunity", "Signal", "Pattern / Trend", "Question"];
 
+// Substance floor: this is a platform for real civic stories, not one-line posts.
+const MIN_TITLE = 8;
+const MIN_BODY = 300;
+
 export default function SubmitPage() {
   const { city, submitSignal } = useStore();
   const cfg = cityCfg(city);
@@ -29,6 +33,7 @@ export default function SubmitPage() {
   const [submitted, setSubmitted] = useState(false);
   const [scanMessage, setScanMessage] = useState("");
   const [safetyWarn, setSafetyWarn] = useState(false);
+  const [substanceWarn, setSubstanceWarn] = useState(false);
 
   useCityEffect(city, () => {
     setForm(blankForm(cityCfg(city).hoods[0]));
@@ -36,8 +41,15 @@ export default function SubmitPage() {
     setSubmitted(false);
   });
 
-  const setF = (k: keyof SubmitForm, v: string | boolean) => { setForm((s) => ({ ...s, [k]: v })); setSafetyWarn(false); };
+  const setF = (k: keyof SubmitForm, v: string | boolean) => { setForm((s) => ({ ...s, [k]: v })); setSafetyWarn(false); setSubstanceWarn(false); };
   const goStep = (n: number) => { setStep(n); setSafetyWarn(false); try { window.scrollTo(0, 0); } catch {} };
+
+  const bodyLen = form.body.trim().length;
+  const hasSubstance = form.title.trim().length >= MIN_TITLE && bodyLen >= MIN_BODY;
+  const toSafety = () => {
+    if (!hasSubstance) { setSubstanceWarn(true); return; }
+    goStep(2);
+  };
 
   const onPhoto = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files && e.target.files[0];
@@ -85,8 +97,8 @@ export default function SubmitPage() {
         <p style={{ fontSize: 17, lineHeight: 1.5, color: "#5a564d", maxWidth: 640, margin: "0 0 22px" }}>Share real stories about public life in {cfg.name} - a good thing happening, a problem that needs attention, a pattern, a resource, or an opportunity. {submitFeeLine} Add a photo and tags if you have them.</p>
 
         <div style={{ background: "#fff8eb", border: "1px solid #c99a2e80", borderRadius: 14, padding: "16px 18px", marginBottom: 26 }}>
-          <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 11, letterSpacing: "1.2px", textTransform: "uppercase", color: "#9a6a12", marginBottom: 8 }}>Public civic stories only</div>
-          <p style={{ fontSize: 13.5, lineHeight: 1.55, color: "#5a564d", margin: 0 }}>This is a platform for the public life of the city - not personal disputes. Please don&apos;t post about cheaters, divorces, family conflicts, or private individuals. No doxxing, threats, or private personal information. Keep it about places, systems, and community.</p>
+          <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 11, letterSpacing: "1.2px", textTransform: "uppercase", color: "#9a6a12", marginBottom: 8 }}>Real stories, real substance</div>
+          <p style={{ fontSize: 13.5, lineHeight: 1.55, color: "#5a564d", margin: 0 }}>This is a platform for reported stories about the public life of the city - not quick posts and not personal disputes. Tell us what you saw, where, and why it matters; submissions need enough substance to review. No cheaters, divorces, or private individuals. No doxxing, threats, or private personal information.</p>
         </div>
 
         {submitted ? (
@@ -143,7 +155,10 @@ export default function SubmitPage() {
                   </div>
                   <div style={{ gridColumn: "1/-1" }}>
                     <label style={labelStyle}>What did you observe?</label>
-                    <textarea value={form.body} onChange={(e) => setF("body", e.target.value)} placeholder="Describe what's happening in the city. Be specific about the place and the situation. Keep it about public life, not private individuals." style={{ ...fieldStyle, minHeight: 150, resize: "vertical", fontFamily: "'Public Sans',sans-serif" }} />
+                    <textarea value={form.body} onChange={(e) => setF("body", e.target.value)} placeholder="Tell the story with real substance: what you saw, where, when, and why it matters to the community. Be specific about the place and situation. Keep it about public life, not private individuals." style={{ ...fieldStyle, minHeight: 170, resize: "vertical", fontFamily: "'Public Sans',sans-serif" }} />
+                    <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 11, marginTop: 6, color: bodyLen >= MIN_BODY ? "#19734a" : "#8a857a" }}>
+                      {bodyLen >= MIN_BODY ? "✓ Enough substance to review" : `${bodyLen} / ${MIN_BODY} characters minimum. Real stories, not one-liners.`}
+                    </div>
                   </div>
                   <div style={{ gridColumn: "1/-1" }}>
                     <label style={labelStyle}>Tags (comma separated, optional)</label>
@@ -170,8 +185,13 @@ export default function SubmitPage() {
                     )}
                   </div>
                 </div>
+                {substanceWarn && (
+                  <div style={{ marginTop: 16, background: "#a3342914", border: "1px solid #a3342959", borderRadius: 12, padding: "13px 15px", fontSize: 13.5, color: "#a33429" }}>
+                    Give your signal a real headline (at least {MIN_TITLE} characters) and a story with substance (at least {MIN_BODY} characters). This is a place for reported stories about the city, not quick posts.
+                  </div>
+                )}
                 <div style={{ marginTop: 22 }}>
-                  <button onClick={() => goStep(2)} style={{ border: "none", background: "#161616", color: "#fff", borderRadius: 999, padding: "13px 24px", fontWeight: 700, fontSize: 15, cursor: "pointer" }}>Next: Safety check &rarr;</button>
+                  <button onClick={toSafety} style={{ border: "none", background: "#161616", color: "#fff", borderRadius: 999, padding: "13px 24px", fontWeight: 700, fontSize: 15, cursor: "pointer" }}>Next: Safety check &rarr;</button>
                 </div>
               </>
             )}
