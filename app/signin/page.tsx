@@ -19,7 +19,7 @@ function SignInInner() {
   const params = useSearchParams();
   const callbackUrl = params.get("callbackUrl") || "/account";
 
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [mode, setMode] = useState<"signin" | "signup">(params.get("join") ? "signup" : "signin");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

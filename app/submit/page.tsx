@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { useSession } from "next-auth/react";
 import { useStore, useCityEffect, SubmitForm } from "@/lib/store";
 import { CAT, TOPICS, HOODS, cityCfg, typeToCat } from "@/lib/data";
 import { config } from "@/lib/config";
@@ -26,6 +27,7 @@ const MIN_BODY = 300;
 
 export default function SubmitPage() {
   const { city, submitSignal } = useStore();
+  const { status } = useSession();
   const cfg = cityCfg(city);
 
   const [form, setForm] = useState<SubmitForm>(() => blankForm(cfg.hoods[0]));
@@ -100,6 +102,15 @@ export default function SubmitPage() {
           <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 11, letterSpacing: "1.2px", textTransform: "uppercase", color: "#9a6a12", marginBottom: 8 }}>Real stories, real substance</div>
           <p style={{ fontSize: 13.5, lineHeight: 1.55, color: "#5a564d", margin: 0 }}>This is a platform for reported stories about the public life of the city - not quick posts and not personal disputes. Tell us what you saw, where, and why it matters; submissions need enough substance to review. No cheaters, divorces, or private individuals. No doxxing, threats, or private personal information.</p>
         </div>
+
+        {status === "unauthenticated" && (
+          <div style={{ background: "#19734a10", border: "1px solid #19734a40", borderRadius: 14, padding: "14px 18px", marginBottom: 26, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
+            <p style={{ fontSize: 13.5, lineHeight: 1.5, color: "#3a362e", margin: 0, flex: 1, minWidth: 220 }}>
+              <strong>Signals are stronger with a byline.</strong> Join free so your stories, follows, and credits live in one place.
+            </p>
+            <Link href="/signin?join=1&callbackUrl=/submit" style={{ textDecoration: "none", background: "#19734a", color: "#fff", borderRadius: 999, padding: "10px 18px", fontWeight: 700, fontSize: 13.5, whiteSpace: "nowrap" }}>Join free</Link>
+          </div>
+        )}
 
         {submitted ? (
           <div style={{ background: "#19734a", color: "#fff", borderRadius: 20, padding: 36, textAlign: "center" }}>

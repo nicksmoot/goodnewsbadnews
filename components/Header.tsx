@@ -79,9 +79,19 @@ export default function Header() {
           {link("/partners", "Partners", is("/partners"))}
           {config.showAdmin &&
             link("/admin", "Moderation", is("/admin"), { fontFamily: "'IBM Plex Mono',monospace", fontSize: 12 })}
-          {status === "authenticated"
-            ? link("/account", "Account", is("/account"))
-            : link("/signin", "Sign in", is("/signin"))}
+          {status === "authenticated" ? (
+            link("/account", "Account", is("/account"))
+          ) : (
+            <>
+              {link("/signin", "Sign in", is("/signin"))}
+              <Link
+                href="/signin?join=1"
+                style={{ textDecoration: "none", background: "#19734a", color: "#fff", borderRadius: 999, padding: "9px 16px", fontWeight: 700, marginLeft: 6 }}
+              >
+                Join
+              </Link>
+            </>
+          )}
           <Link
             href="/submit"
             style={{ textDecoration: "none", background: "#161616", color: "#fff", borderRadius: 999, padding: "9px 16px", fontWeight: 700, marginLeft: 6 }}

@@ -89,14 +89,15 @@ export default function SignalMap() {
   }, []);
 
   const mapCountLine =
-    mapPosts.length + (mapPosts.length === 1 ? " signal mapped" : " signals mapped") + " across " + cfg.name;
+    mapPosts.length + (mapPosts.length === 1 ? " story mapped" : " stories mapped") + " across " + cfg.name;
 
   return (
     <div>
       <section style={{ maxWidth: 1240, margin: "0 auto", padding: "46px 24px 8px" }}>
         <div style={{ fontFamily: "'IBM Plex Mono',monospace", textTransform: "uppercase", letterSpacing: "1.6px", fontSize: 12, color: "#6b675e", marginBottom: 14 }}>{cfg.short} · Signal Map</div>
         <h1 style={{ fontFamily: "'Spectral',serif", fontWeight: 800, fontSize: "clamp(38px,5vw,60px)", lineHeight: 1, letterSpacing: "-1.8px", margin: "0 0 14px" }}>Where {cfg.name}&apos;s stories are coming from.</h1>
-        <p style={{ fontSize: 18, lineHeight: 1.5, color: "#5a564d", maxWidth: 760, margin: "0 0 8px" }}>Every published signal mapped to where it was reported. Pins are color-coded by type, so you can see at a glance where wins, concerns, and opportunities are clustering across the city.</p>
+        <p style={{ fontSize: 18, lineHeight: 1.5, color: "#5a564d", maxWidth: 760, margin: "0 0 8px" }}>Every published story mapped to where it was reported. Pins are color-coded by type, so you can see at a glance where wins, concerns, and opportunities are clustering across the city.</p>
+        <p style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 12, lineHeight: 1.6, color: "#8a857a", maxWidth: 760, margin: "10px 0 0", letterSpacing: "0.2px" }}>How it works: residents submit <strong style={{ color: "#5a564d" }}>signals</strong> (raw reports). Reviewed signals publish as <strong style={{ color: "#5a564d" }}>stories</strong>. Related signals combine into <strong style={{ color: "#6b3fa0" }}>pattern reports</strong>.</p>
       </section>
 
       <section style={{ maxWidth: 1240, margin: "0 auto", padding: "16px 24px 64px" }}>
