@@ -66,7 +66,7 @@ export default function HomePage() {
           <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 12, fontWeight: 600, letterSpacing: "2px", color: "#9a6a12", textTransform: "uppercase", marginBottom: 18 }}>A civic signal platform · Now live in two cities</div>
           <h1 style={{ fontFamily: "'Spectral',serif", fontWeight: 800, fontSize: "clamp(46px,7vw,88px)", lineHeight: 0.93, letterSpacing: "-2.5px", margin: "0 0 22px" }}>Every city has two stories. Both matter.</h1>
           <p style={{ fontSize: 20, lineHeight: 1.5, color: "#3a362e", maxWidth: 660, margin: "0 0 28px" }}>
-            Good News Bad News is a civic signal platform where residents submit the wins, concerns, patterns, and opportunities they&apos;re seeing around them. We review and organize those signals so a community can see what&apos;s working, what needs attention, and where to act next. Now launching in <strong>Spokane</strong> and <strong>Honolulu</strong>.
+            Local newsrooms are vanishing, and the stories didn&apos;t stop happening. They just stopped being told. Good News Bad News is where residents put their city back on the record: the wins, the warnings, the patterns, and the opportunities, reviewed and organized so the community can act. Now live in <strong>Spokane</strong> and <strong>Honolulu</strong>.
           </p>
           <div className="gnbn-cta-row" style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 22 }}>
             <Link href="/submit" style={{ textDecoration: "none", background: "#19734a", color: "#fff", borderRadius: 999, padding: "14px 24px", fontWeight: 700, fontSize: 16 }}>Submit a Signal</Link>
@@ -90,6 +90,38 @@ export default function HomePage() {
             </div>
           ))}
         </aside>
+      </section>
+
+      {/* The unreported city (why this exists) */}
+      <section style={{ background: "#161616", color: "#fff" }}>
+        <div className="gnbn-section" style={{ maxWidth: 1240, margin: "0 auto", padding: "58px 24px 54px" }}>
+          <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 12, fontWeight: 600, letterSpacing: "2.2px", textTransform: "uppercase", color: "#e89a8f", marginBottom: 18 }}>The unreported city</div>
+          <h2 style={{ fontFamily: "'Spectral',serif", fontWeight: 800, fontSize: "clamp(30px,4.6vw,54px)", lineHeight: 1.04, letterSpacing: "-1.6px", margin: "0 0 18px", maxWidth: 900 }}>
+            A bank robbery can go unreported here.<br />
+            <span style={{ color: "#7fcfa5" }}>So can a Little League grand slam.</span>
+          </h2>
+          <p style={{ fontFamily: "'Spectral',serif", fontSize: 19, lineHeight: 1.55, color: "#cfc8b9", maxWidth: 720, margin: "0 0 34px" }}>
+            When a city loses its newsroom, the news keeps happening; it just stops being written down. The break-in and the breakthrough get the same coverage: none. Rumor fills the vacuum, trust goes with it, and the people doing the quiet good work never get their name in the paper. We&apos;re changing that.
+          </p>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 18 }}>
+            <div style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.13)", borderTop: "3px solid #a33429", borderRadius: 14, padding: 22 }}>
+              <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase", color: "#e89a8f", marginBottom: 10 }}>What goes unreported</div>
+              <p style={{ fontSize: 14.5, lineHeight: 1.6, color: "#e7e1d4", margin: 0 }}>The dark blocks, the repeat break-ins, the failing systems. The warnings neighbors whisper to each other but never get to file anywhere.</p>
+            </div>
+            <div style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.13)", borderTop: "3px solid #19734a", borderRadius: 14, padding: 22 }}>
+              <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase", color: "#7fcfa5", marginBottom: 10 }}>What goes uncelebrated</div>
+              <p style={{ fontSize: 14.5, lineHeight: 1.6, color: "#e7e1d4", margin: 0 }}>First jobs, warming centers, the coach who opens the gym every Sunday, the grand slam nobody outside the bleachers heard about.</p>
+            </div>
+            <div style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.13)", borderTop: "3px solid #c99a2e", borderRadius: 14, padding: 22 }}>
+              <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase", color: "#e8c46f", marginBottom: 10 }}>What it costs</div>
+              <p style={{ fontSize: 14.5, lineHeight: 1.6, color: "#e7e1d4", margin: 0 }}>A city that can&apos;t see itself runs on rumor. Problems fester in the dark, good work goes unfunded, and trust quietly leaves town.</p>
+            </div>
+          </div>
+          <div style={{ marginTop: 30, display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
+            <Link href="/submit" style={{ textDecoration: "none", background: "#19734a", color: "#fff", borderRadius: 999, padding: "13px 24px", fontWeight: 700, fontSize: 15 }}>Put it on the record</Link>
+            <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 12, color: "#8a857a", letterSpacing: "0.4px" }}>Every signal reviewed. Patterns, not rumors.</span>
+          </div>
+        </div>
       </section>
 
       {/* Two-city launch cards */}
