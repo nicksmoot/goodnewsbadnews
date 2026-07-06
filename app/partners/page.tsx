@@ -9,13 +9,26 @@ const darkInput: React.CSSProperties = {
   padding: 12, borderRadius: 11, fontSize: 14.5,
 };
 
-const pillarCard = (accent: string, border: string, kicker: string, title: string, body: string) => (
-  <div style={{ background: "#fffaf1", border: `1px solid ${border}`, borderLeft: `5px solid ${accent}`, borderRadius: 16, padding: 24 }}>
-    <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontWeight: 600, letterSpacing: "1.4px", fontSize: 12, color: accent === "#c99a2e" ? "#9a6a12" : accent, textTransform: "uppercase", marginBottom: 10 }}>{kicker}</div>
-    <h3 style={{ fontFamily: "'Spectral',serif", fontWeight: 700, fontSize: 23, margin: "0 0 8px", lineHeight: 1.1 }}>{title}</h3>
-    <p style={{ fontSize: 14.5, lineHeight: 1.55, color: "#5a564d", margin: 0 }}>{body}</p>
-  </div>
-);
+// A centered small-caps section label with a hairline rule on each side.
+function Rule({ label }: { label: string }) {
+  return (
+    <div style={{ maxWidth: 1240, margin: "0 auto", padding: "0 24px", display: "flex", alignItems: "center", gap: 16 }}>
+      <span style={{ flex: 1, height: 1, background: "#d8cab2" }} />
+      <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 12, letterSpacing: "2.4px", textTransform: "uppercase", color: "#8a5e0f" }}>{label} ◆</span>
+      <span style={{ flex: 1, height: 1, background: "#d8cab2" }} />
+    </div>
+  );
+}
+
+function PillarColumn({ accent, kicker, title, body }: { accent: string; kicker: string; title: string; body: string }) {
+  return (
+    <div style={{ background: "#fffaf1", border: "1px solid #d8cab2", borderTop: `4px double ${accent}`, borderRadius: "4px 4px 14px 14px", padding: 24 }}>
+      <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontWeight: 600, letterSpacing: "1.8px", fontSize: 11.5, color: accent === "#c99a2e" ? "#9a6a12" : accent, textTransform: "uppercase", marginBottom: 12 }}>{kicker}</div>
+      <h3 style={{ fontFamily: "'Spectral',serif", fontWeight: 800, fontSize: 24, margin: "0 0 10px", lineHeight: 1.08, letterSpacing: "-0.4px" }}>{title}</h3>
+      <p style={{ fontFamily: "'Spectral',serif", fontSize: 15.5, lineHeight: 1.55, color: "#3a362e", margin: 0 }}>{body}</p>
+    </div>
+  );
+}
 
 const stepCard = (n: string, title: string, body: string) => (
   <div style={{ background: "#fffaf1", border: "1px solid #d8cab2", borderRadius: 18, padding: 22 }}>
@@ -34,22 +47,58 @@ export default function PartnersPage() {
 
   return (
     <div>
-      <section style={{ maxWidth: 1240, margin: "0 auto", padding: "46px 24px 8px" }}>
-        <div style={{ fontFamily: "'IBM Plex Mono',monospace", textTransform: "uppercase", letterSpacing: "1.6px", fontSize: 12, color: "#6b675e", marginBottom: 14 }}>For newsrooms &amp; local press</div>
-        <h1 style={{ fontFamily: "'Spectral',serif", fontWeight: 800, fontSize: "clamp(38px,5.2vw,64px)", lineHeight: 0.98, letterSpacing: "-2px", margin: "0 0 18px", maxWidth: 900 }}>Partner with the people who see it first.</h1>
-        <p style={{ fontSize: 19, lineHeight: 1.5, color: "#3a362e", maxWidth: 760, margin: "0 0 8px" }}>Good News Bad News gives local newsrooms a steady, reviewed stream of resident signals - and gives citizen journalists the reach, mentorship, and editorial support to turn what they&apos;re seeing into real stories. Together you cover the city more completely than either can alone.</p>
-      </section>
-
-      <section style={{ maxWidth: 1240, margin: "0 auto", padding: "36px 24px 8px" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 18 }}>
-          {pillarCard("#19734a", "#19734a59", "For newsrooms", "A reviewed signal feed.", "Browse emerging stories before they break. Every signal is moderated, location-tagged, and labeled by verification status - a running tip line built by residents across the city.")}
-          {pillarCard("#285d83", "#285d834d", "For citizen journalists", "Reach, mentorship & a byline.", "Residents who submit a signal can be paired with a partner reporter to expand it into a full story - with editorial guidance, fact-checking support, and credit for the person who saw it first.")}
-          {pillarCard("#c99a2e", "#c99a2e80", "For the community", "Patterns get real reporting.", "The trends residents surface get the depth they deserve instead of disappearing into a feed - and the public gets reporting grounded in what people are actually living.")}
+      {/* ============ MASTHEAD ============ */}
+      <section style={{ maxWidth: 1240, margin: "0 auto", padding: "34px 24px 0" }}>
+        <div style={{ borderTop: "3px double #161616", borderBottom: "3px double #161616", padding: "14px 0" }}>
+          {/* dateline */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8, fontFamily: "'IBM Plex Mono',monospace", fontSize: 10.5, letterSpacing: "1.6px", textTransform: "uppercase", color: "#6b675e", marginBottom: 10 }}>
+            <span>Est. MMXXVI</span>
+            <span style={{ color: "#8a5e0f" }}>The Partners Edition</span>
+            <span>All the signal fit to print</span>
+          </div>
+          {/* wordmark */}
+          <div style={{ textAlign: "center", fontFamily: "'Spectral',serif", fontWeight: 800, fontSize: "clamp(32px,5.4vw,54px)", letterSpacing: "-1.4px", lineHeight: 1 }}>
+            <span style={{ color: "#19734a" }}>Good News</span> <span style={{ color: "#a33429" }}>Bad News</span>
+          </div>
+          {/* motto */}
+          <div style={{ textAlign: "center", fontFamily: "'Spectral',serif", fontStyle: "italic", fontSize: 15, color: "#6b675e", marginTop: 8 }}>
+            A civic broadsheet built with the newsrooms who cover the city best.
+          </div>
         </div>
       </section>
 
-      <section style={{ maxWidth: 1240, margin: "0 auto", padding: "50px 24px 8px" }}>
-        <div style={{ fontFamily: "'IBM Plex Mono',monospace", textTransform: "uppercase", letterSpacing: "1.6px", fontSize: 12, color: "#6b675e", borderBottom: "1px solid #d8cab2", paddingBottom: 12, marginBottom: 26 }}>How a partnership works</div>
+      {/* ============ FRONT-PAGE SPLASH ============ */}
+      <section style={{ maxWidth: 900, margin: "0 auto", padding: "34px 24px 6px", textAlign: "center" }}>
+        <div style={{ fontFamily: "'IBM Plex Mono',monospace", textTransform: "uppercase", letterSpacing: "2.2px", fontSize: 12, color: "#a33429", marginBottom: 14 }}>Founding press partners wanted</div>
+        <h1 style={{ fontFamily: "'Spectral',serif", fontWeight: 800, fontSize: "clamp(40px,6vw,72px)", lineHeight: 0.96, letterSpacing: "-2.2px", margin: "0 0 16px" }}>Partner with the people who see it first.</h1>
+        <p style={{ fontFamily: "'Spectral',serif", fontStyle: "italic", fontSize: "clamp(18px,2.4vw,23px)", lineHeight: 1.4, color: "#3a362e", margin: "0 auto", maxWidth: 660 }}>
+          A reviewed stream of resident signals for your newsroom - and the reach, mentorship, and byline for the residents who spotted the story.
+        </p>
+      </section>
+
+      {/* ============ LEDE (columned, drop cap) ============ */}
+      <section style={{ maxWidth: 900, margin: "0 auto", padding: "22px 24px 8px" }}>
+        <p style={{ fontFamily: "'Spectral',serif", fontSize: 17, lineHeight: 1.62, color: "#2b2820", margin: 0, columns: "20rem 2", columnGap: 34 }}>
+          <span style={{ float: "left", fontFamily: "'Spectral',serif", fontWeight: 800, fontSize: 62, lineHeight: 0.72, paddingRight: 10, paddingTop: 6, color: "#a33429" }}>G</span>
+          ood News Bad News gives local newsrooms a steady, moderated, location-tagged feed of what residents are actually seeing on the ground - wins, concerns, patterns, and opportunities, each labeled by verification status. It is, in effect, a running tip line built by the whole city. And it gives citizen journalists something newsrooms rarely can: guidance, fact-checking support, distribution, and credit for the person who noticed the story before anyone else. Together you cover the city more completely than either can alone - the resident who lives it, and the reporter who can carry it the rest of the way.
+        </p>
+      </section>
+
+      <div style={{ padding: "26px 0 6px" }}><Rule label="Why partner" /></div>
+
+      {/* ============ PILLARS ============ */}
+      <section style={{ maxWidth: 1240, margin: "0 auto", padding: "22px 24px 8px" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 18 }}>
+          <PillarColumn accent="#19734a" kicker="For newsrooms" title="A reviewed signal feed." body="Browse emerging stories before they break. Every signal is moderated, location-tagged, and labeled by verification status - a running tip line built by residents across the city." />
+          <PillarColumn accent="#285d83" kicker="For citizen journalists" title="Reach, mentorship & a byline." body="Residents who submit a signal can be paired with a partner reporter to expand it into a full story - with editorial guidance, fact-checking support, and credit for the person who saw it first." />
+          <PillarColumn accent="#c99a2e" kicker="For the community" title="Patterns get real reporting." body="The trends residents surface get the depth they deserve instead of disappearing into a feed - and the public gets reporting grounded in what people are actually living." />
+        </div>
+      </section>
+
+      <div style={{ padding: "40px 0 6px" }}><Rule label="The process" /></div>
+
+      {/* ============ HOW IT WORKS ============ */}
+      <section style={{ maxWidth: 1240, margin: "0 auto", padding: "22px 24px 8px" }}>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 18 }}>
           {stepCard("1", "Claim a signal", "Editors browse the reviewed feed and flag the signals worth expanding into reporting.")}
           {stepCard("2", "Co-report with the resident", "The original contributor is invited to work with a reporter - sharing context, photos, and sources.")}
@@ -58,6 +107,7 @@ export default function PartnersPage() {
         </div>
       </section>
 
+      {/* ============ WHAT PARTNERS GET + FORM ============ */}
       <section style={{ maxWidth: 1240, margin: "0 auto", padding: "50px 24px 8px" }}>
         <div className="gnbn-dark-panel" style={{ background: "#161616", color: "#fff", borderRadius: 24, padding: 42, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 40, alignItems: "start" }}>
           <div>
@@ -97,10 +147,11 @@ export default function PartnersPage() {
         </div>
       </section>
 
+      {/* ============ CLOSING BAND ============ */}
       <section style={{ maxWidth: 1240, margin: "0 auto", padding: "34px 24px 64px" }}>
-        <div style={{ background: "#fbf4e6", border: "1px solid #d8cab2", borderRadius: 16, padding: "22px 24px" }}>
-          <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 11, letterSpacing: "1.4px", textTransform: "uppercase", color: "#9a6a12", marginBottom: 10 }}>In conversation with newsrooms in Spokane &amp; Honolulu</div>
-          <p style={{ fontSize: 14.5, lineHeight: 1.55, color: "#5a564d", margin: 0 }}>We&apos;re onboarding founding press partners in both launch cities - daily papers, weeklies, public radio, and independent local reporters. If your newsroom covers a community we&apos;re in, there&apos;s a seat at the table.</p>
+        <div style={{ background: "#fbf4e6", border: "1px solid #d8cab2", borderRadius: 16, padding: "22px 24px", textAlign: "center" }}>
+          <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 11, letterSpacing: "1.8px", textTransform: "uppercase", color: "#9a6a12", marginBottom: 10 }}>In conversation with newsrooms in Spokane &amp; Honolulu</div>
+          <p style={{ fontFamily: "'Spectral',serif", fontSize: 16, lineHeight: 1.6, color: "#3a362e", margin: "0 auto", maxWidth: 720 }}>We&apos;re onboarding founding press partners in both launch cities - daily papers, weeklies, public radio, and independent local reporters. If your newsroom covers a community we&apos;re in, there&apos;s a seat at the table.</p>
         </div>
       </section>
     </div>
