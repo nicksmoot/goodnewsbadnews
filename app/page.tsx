@@ -213,8 +213,12 @@ export default function HomePage() {
         <div className="gnbn-dark-panel" style={{ background: "#161616", color: "#fff", borderRadius: 24, padding: 46, display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: 40, alignItems: "center" }}>
           <div>
             <h2 style={{ fontFamily: "'Spectral',serif", fontWeight: 800, fontSize: 38, lineHeight: 1.05, letterSpacing: "-1px", margin: "0 0 14px" }}>Seen something {cfg.name} should know?</h2>
-            <p style={{ fontSize: 17, lineHeight: 1.55, color: "#cfc8b9", margin: "0 0 22px", maxWidth: 520 }}>Submit a signal. It can be a good story, a concern, a trend, a resource, or something you think people are missing.</p>
-            <Link href="/submit" style={{ textDecoration: "none", display: "inline-block", background: "#19734a", color: "#fff", borderRadius: 999, padding: "14px 26px", fontWeight: 700, fontSize: 16 }}>Submit a Signal</Link>
+            <p style={{ fontSize: 17, lineHeight: 1.55, color: "#cfc8b9", margin: "0 0 14px", maxWidth: 520 }}>Submit a signal. It can be a good story, a concern, a trend, a resource, or something you think people are missing.</p>
+            <p style={{ fontSize: 15.5, lineHeight: 1.55, color: "#e8c46f", margin: "0 0 22px", maxWidth: 520 }}><strong>And it can pay you:</strong> when a partner newsroom licenses your story, you get paid, with your byline on it.</p>
+            <div className="gnbn-cta-row" style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+              <Link href="/submit" style={{ textDecoration: "none", display: "inline-block", background: "#19734a", color: "#fff", borderRadius: 999, padding: "14px 26px", fontWeight: 700, fontSize: 16 }}>Submit a Signal</Link>
+              <Link href="/signin?join=1" style={{ textDecoration: "none", display: "inline-block", border: "1px solid rgba(255,255,255,0.5)", color: "#fff", borderRadius: 999, padding: "14px 26px", fontWeight: 700, fontSize: 16 }}>Join &amp; get paid</Link>
+            </div>
           </div>
           <div style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.14)", borderRadius: 16, padding: 24 }}>
             <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase", color: "#c99a2e", marginBottom: 14 }}>We review submissions before publication</div>

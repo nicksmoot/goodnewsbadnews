@@ -58,18 +58,43 @@ function SignInInner() {
     }
   };
 
+  const benefit = (n: string, color: string, title: string, body: string) => (
+    <div style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
+      <span style={{ fontFamily: "'Spectral',serif", fontWeight: 800, fontSize: 30, lineHeight: 1, color, flexShrink: 0 }}>{n}</span>
+      <span>
+        <strong style={{ display: "block", fontFamily: "'Spectral',serif", fontSize: 18, marginBottom: 3, color: "#161616" }}>{title}</strong>
+        <span style={{ fontSize: 14, lineHeight: 1.5, color: "#5a564d" }}>{body}</span>
+      </span>
+    </div>
+  );
+
   return (
-    <section style={{ maxWidth: 460, margin: "0 auto", padding: "56px 24px 80px" }}>
+    <section style={{ maxWidth: mode === "signup" ? 980 : 460, margin: "0 auto", padding: "56px 24px 80px" }}>
+      <div style={{ display: "grid", gridTemplateColumns: mode === "signup" ? "1fr 1fr" : "1fr", gap: 48, alignItems: "start" }}>
+      {mode === "signup" && (
+        <aside style={{ background: "#fffaf1", border: "1px solid #d8cab2", borderRadius: 20, padding: 28, boxShadow: "0 10px 34px rgba(0,0,0,0.05)" }}>
+          <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 11, letterSpacing: "1.6px", textTransform: "uppercase", color: "#9a6a12", marginBottom: 18 }}>Why join</div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+            {benefit("1", "#19734a", "Put your city on the record", "Your reporting becomes part of the public record: reviewed, mapped, and impossible to ignore. The wins and the warnings your city would otherwise miss.")}
+            {benefit("2", "#a33429", "Get paid for your stories", "Local newsrooms license stories straight from this feed - $100 exclusives and annual deals - and every license pays the resident who reported it. Your story, your byline, your money.")}
+            {benefit("3", "#8a5e0f", "Turn reporting into a career", "Partner newsrooms hire directly from this community. Strong contributors get co-reporting invitations, editorial mentorship, and real job offers.")}
+          </div>
+          <div style={{ borderTop: "1px solid #e4d8c2", marginTop: 22, paddingTop: 14, fontFamily: "'IBM Plex Mono',monospace", fontSize: 11, color: "#8a857a", letterSpacing: "0.5px", lineHeight: 1.7 }}>
+            Free to join · Byline on everything you publish · No gossip, ever
+          </div>
+        </aside>
+      )}
+      <div>
       <div style={{ fontFamily: "'IBM Plex Mono',monospace", textTransform: "uppercase", letterSpacing: "1.6px", fontSize: 12, color: "#6b675e", marginBottom: 14 }}>
         {mode === "signin" ? "Sign in" : "Create your account"}
       </div>
       <h1 style={{ fontFamily: "'Spectral',serif", fontWeight: 800, fontSize: "clamp(32px,4.4vw,44px)", lineHeight: 1.03, letterSpacing: "-1.4px", margin: "0 0 10px" }}>
-        {mode === "signin" ? "Welcome back." : "Join the signal."}
+        {mode === "signin" ? "Welcome back." : "Join the signal. Get paid for it."}
       </h1>
       <p style={{ fontSize: 15.5, lineHeight: 1.5, color: "#5a564d", margin: "0 0 26px" }}>
         {mode === "signin"
           ? "Sign in to submit signals, follow stories, and manage your membership."
-          : "An account lets you submit signals, build a public byline, and get paid when newsrooms license your stories."}
+          : "Report what you see, help your city see itself clearly, and earn real money when newsrooms license your stories."}
       </p>
 
       <form onSubmit={submit} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
@@ -112,6 +137,8 @@ function SignInInner() {
       <p style={{ marginTop: 26, fontSize: 12.5, color: "#8a857a", lineHeight: 1.5 }}>
         By continuing you agree to our <Link href="/standards" style={{ color: "#19734a" }}>community standards</Link>.
       </p>
+      </div>
+      </div>
     </section>
   );
 }
