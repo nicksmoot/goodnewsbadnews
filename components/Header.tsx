@@ -10,6 +10,8 @@ import { CityKey } from "@/lib/data";
 const INK = "#161616";
 const MUTED = "#6b675e";
 
+// Desktop section bar (newspaper style). Standards stays reachable via the
+// footer and the About page; the bar keeps to the sections readers live in.
 const NAV_LINKS: [string, string][] = [
   ["/latest", "Latest"],
   ["/good", "Good"],
@@ -18,9 +20,8 @@ const NAV_LINKS: [string, string][] = [
   ["/map", "Map"],
   ["/leaderboard", "Ledger"],
   ["/digest", "Digest"],
-  ["/about", "About"],
-  ["/standards", "Standards"],
   ["/partners", "Partners"],
+  ["/about", "About"],
 ];
 
 export default function Header() {
@@ -99,17 +100,14 @@ export default function Header() {
           </select>
         </div>
 
-        {/* Desktop nav */}
+        {/* Desktop: account + primary actions only (sections live in the bar below) */}
         <nav
           className="gnbn-nav-desktop"
           style={{
-            display: "flex", gap: 4, alignItems: "center", flexWrap: "wrap",
+            display: "flex", gap: 6, alignItems: "center",
             fontFamily: "'Public Sans',sans-serif", fontSize: 13.5, fontWeight: 600,
           }}
         >
-          {NAV_LINKS.map(([href, label]) => link(href, label, is(href)))}
-          {isAdmin &&
-            link("/admin", "Moderation", is("/admin"), { fontFamily: "'IBM Plex Mono',monospace", fontSize: 12 })}
           {status === "authenticated" ? (
             link("/account", "Account", is("/account"))
           ) : (
@@ -117,7 +115,7 @@ export default function Header() {
               {link("/signin", "Sign in", is("/signin"))}
               <Link
                 href="/signin?join=1"
-                style={{ textDecoration: "none", background: "#19734a", color: "#fff", borderRadius: 999, padding: "9px 16px", fontWeight: 700, marginLeft: 6 }}
+                style={{ textDecoration: "none", background: "#19734a", color: "#fff", borderRadius: 999, padding: "9px 16px", fontWeight: 700 }}
               >
                 Join
               </Link>
@@ -125,7 +123,7 @@ export default function Header() {
           )}
           <Link
             href="/submit"
-            style={{ textDecoration: "none", background: "#161616", color: "#fff", borderRadius: 999, padding: "9px 16px", fontWeight: 700, marginLeft: 6 }}
+            style={{ textDecoration: "none", background: "#161616", color: "#fff", borderRadius: 999, padding: "9px 16px", fontWeight: 700 }}
           >
             Submit a Signal
           </Link>
@@ -147,6 +145,50 @@ export default function Header() {
           <span style={{ display: "block", width: 20, height: 2, background: INK, opacity: open ? 0 : 1, transition: "opacity 0.15s" }} />
           <span style={{ display: "block", width: 20, height: 2, background: INK, transition: "transform 0.2s", transform: open ? "translateY(-6px) rotate(-45deg)" : "none" }} />
         </button>
+      </div>
+
+      {/* Desktop section bar (newspaper masthead second deck) */}
+      <div className="gnbn-nav-desktop gnbn-section-bar" style={{ borderTop: "1px solid #e4d8c2" }}>
+        <nav
+          aria-label="Sections"
+          style={{
+            maxWidth: 1240, margin: "0 auto", padding: "0 24px",
+            display: "flex", alignItems: "center", flexWrap: "wrap",
+            fontFamily: "'IBM Plex Mono',monospace", fontSize: 11.5, fontWeight: 600,
+            letterSpacing: "1.4px", textTransform: "uppercase",
+          }}
+        >
+          {NAV_LINKS.map(([href, label], i) => (
+            <span key={href} style={{ display: "flex", alignItems: "center" }}>
+              {i > 0 && <span aria-hidden style={{ color: "#d8cab2", padding: "0 2px" }}>·</span>}
+              <Link
+                href={href}
+                style={{
+                  textDecoration: "none", padding: "9px 9px", display: "inline-block",
+                  color: is(href) ? "#19734a" : MUTED,
+                  borderBottom: is(href) ? "2px solid #19734a" : "2px solid transparent",
+                }}
+              >
+                {label}
+              </Link>
+            </span>
+          ))}
+          {isAdmin && (
+            <span style={{ display: "flex", alignItems: "center" }}>
+              <span aria-hidden style={{ color: "#d8cab2", padding: "0 2px" }}>·</span>
+              <Link
+                href="/admin"
+                style={{
+                  textDecoration: "none", padding: "9px 9px", display: "inline-block",
+                  color: is("/admin") ? "#19734a" : "#a33429",
+                  borderBottom: is("/admin") ? "2px solid #19734a" : "2px solid transparent",
+                }}
+              >
+                Moderation
+              </Link>
+            </span>
+          )}
+        </nav>
       </div>
 
       {/* Mobile menu panel */}

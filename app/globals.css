@@ -106,9 +106,12 @@ img { max-width: 100%; }
   /* Header: desktop nav collapses into the hamburger menu. */
   .gnbn-nav-desktop { display: none !important; }
   .gnbn-hamburger { display: inline-flex !important; }
-  /* Tighten the brand row so wordmark + city switcher + button fit at 360px. */
+  /* Tighten the brand row so wordmark + city switcher + menu button fit at 360px. */
   header .gnbn-in-label { display: none; }
-  .gnbn-wordmark { font-size: 20px !important; }
+  .gnbn-wordmark { font-size: 18px !important; }
+  header > div { gap: 10px !important; padding: 11px 14px !important; }
+  header > div > div:first-child { gap: 7px !important; flex-shrink: 1 !important; min-width: 0; overflow: hidden; }
+  .gnbn-city-select { font-size: 10px !important; padding: 4px 6px !important; flex-shrink: 0; }
 
   /* Map gets a shorter, full-width frame; the side list stacks below. */
   #gnbn-map { height: 440px !important; }
@@ -118,8 +121,13 @@ img { max-width: 100%; }
   .gnbn-section { padding-top: 36px !important; }
 
   /* iOS Safari auto-zooms (and stays zoomed, bleeding the layout) when a
-     focused form control is under 16px. Force 16px on touch screens. */
-  input, select, textarea { font-size: 16px !important; }
+     focused text field is under 16px. Selects open the native picker instead,
+     so they keep their compact size (the header city select must stay small
+     or it pushes the hamburger off-screen). */
+  input, textarea { font-size: 16px !important; }
+
+  /* The menu button must never be squeezed out of the header row. */
+  .gnbn-hamburger { flex-shrink: 0; }
 }
 
 @media (max-width: 560px) {
