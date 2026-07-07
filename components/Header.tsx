@@ -52,8 +52,8 @@ export default function Header() {
       href={href}
       onClick={() => setOpen(false)}
       style={{
-        display: "block", textDecoration: "none", padding: "14px 6px",
-        fontFamily: "'Spectral',serif", fontWeight: 700, fontSize: 19,
+        display: "block", textDecoration: "none", padding: "10px 6px",
+        fontFamily: "'Spectral',serif", fontWeight: 700, fontSize: 17,
         color: is(href) ? "#19734a" : INK, borderBottom: "1px solid #ece1cd",
       }}
     >
@@ -152,10 +152,24 @@ export default function Header() {
       {/* Mobile menu panel */}
       {open && (
         <nav className="gnbn-mobile-menu" aria-label="Mobile" style={{ borderTop: "1px solid #d8cab2", background: "#f8f2e7", maxHeight: "calc(100vh - 68px)", overflowY: "auto" }}>
-          <div style={{ padding: "8px 24px 22px" }}>
-            {NAV_LINKS.map(([href, label]) => mobileRow(href, label))}
-            {isAdmin && mobileRow("/admin", "Moderation")}
-            {status === "authenticated" && mobileRow("/account", "Account")}
+          <div style={{ padding: "4px 24px 22px" }}>
+            {([
+              ["Read", [["/latest", "Latest"], ["/good", "Good News"], ["/bad", "Bad News"], ["/both", "Both"]]],
+              ["Explore", [["/map", "Signal Map"], ["/leaderboard", "The Ledger"], ["/digest", "Saturday Digest"]]],
+              ["The paper", [["/about", "About"], ["/standards", "Community Standards"], ["/partners", "For Newsrooms"]]],
+            ] as [string, [string, string][]][]).map(([section, links]) => (
+              <div key={section}>
+                <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 10, fontWeight: 600, letterSpacing: "1.8px", textTransform: "uppercase", color: "#9a6a12", margin: "16px 0 2px" }}>{section}</div>
+                {links.map(([href, label]) => mobileRow(href, label))}
+              </div>
+            ))}
+            {(isAdmin || status === "authenticated") && (
+              <div>
+                <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 10, fontWeight: 600, letterSpacing: "1.8px", textTransform: "uppercase", color: "#9a6a12", margin: "16px 0 2px" }}>Your desk</div>
+                {status === "authenticated" && mobileRow("/account", "Account")}
+                {isAdmin && mobileRow("/admin", "Moderation")}
+              </div>
+            )}
 
             <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 18 }}>
               <Link href="/submit" onClick={() => setOpen(false)} style={{ textDecoration: "none", textAlign: "center", background: "#161616", color: "#fff", borderRadius: 999, padding: "14px 20px", fontWeight: 700, fontSize: 15.5 }}>

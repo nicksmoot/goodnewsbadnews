@@ -102,10 +102,11 @@ export default function SubmitPage() {
 
   const resetForm = () => { setForm(blankForm(cfg.hoods[0])); setStep(1); setSubmitted(false); };
 
-  const submitFeeLine = config.paidModel ? "Submitting a signal costs $0.50 to reduce spam." : "Submitting is free.";
-  const submitButtonLabel = config.paidModel ? "Pay $0.50 & submit for review" : "Submit for review";
-  const submitButtonNote = config.paidModel
-    ? "In the live product this opens checkout, then the signal enters moderation."
+  const submitFeeLine = config.paidModel ? "Submitting costs $0.50 per signal, or is included with membership (15 a month)." : "Submitting is free.";
+  const submitButtonLabel = "Submit for review";
+  const isMemberUser = session?.user?.plan === "member";
+  const submitButtonNote = config.paidModel && !isMemberUser
+    ? "Checkout opens next; your signal enters moderation once payment completes. Nothing publishes automatically."
     : "Your signal goes straight to the moderation queue - nothing publishes automatically.";
 
   const reviewCat = CAT[typeToCat(form.type)] || CAT.signal;
@@ -136,15 +137,20 @@ export default function SubmitPage() {
         </div>
 
         {status === "unauthenticated" && (
-          <div style={{ background: "#19734a10", border: "1px solid #19734a40", borderRadius: 14, padding: "14px 18px", marginBottom: 26, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
-            <p style={{ fontSize: 13.5, lineHeight: 1.5, color: "#3a362e", margin: 0, flex: 1, minWidth: 220 }}>
-              <strong>Signals are stronger with a byline.</strong> Join free so your stories, follows, credits, and payouts live in one place.
+          <div style={{ background: "#161616", color: "#fff", borderRadius: 20, padding: 30, marginBottom: 26 }}>
+            <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase", color: "#c99a2e", marginBottom: 12 }}>Account required</div>
+            <h2 style={{ fontFamily: "'Spectral',serif", fontWeight: 800, fontSize: 26, lineHeight: 1.1, margin: "0 0 10px" }}>Every signal carries a real byline.</h2>
+            <p style={{ fontSize: 15, lineHeight: 1.55, color: "#cfc8b9", margin: "0 0 18px", maxWidth: 520 }}>
+              Create a free account to submit. Posting costs $0.50 per signal to keep the feed spam-free, or is included with membership (15 a month) - and when a newsroom licenses your story, you get paid.
             </p>
-            <Link href="/signin?join=1&callbackUrl=/submit" style={{ textDecoration: "none", background: "#19734a", color: "#fff", borderRadius: 999, padding: "10px 18px", fontWeight: 700, fontSize: 13.5, whiteSpace: "nowrap" }}>Join free</Link>
+            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+              <Link href="/signin?join=1&callbackUrl=/submit" style={{ textDecoration: "none", background: "#19734a", color: "#fff", borderRadius: 999, padding: "13px 24px", fontWeight: 700, fontSize: 15 }}>Join free</Link>
+              <Link href="/signin?callbackUrl=/submit" style={{ textDecoration: "none", border: "1px solid rgba(255,255,255,0.45)", color: "#fff", borderRadius: 999, padding: "13px 24px", fontWeight: 700, fontSize: 15 }}>Sign in</Link>
+            </div>
           </div>
         )}
 
-        {submitted ? (
+        {status === "unauthenticated" ? null : submitted ? (
           <div style={{ background: "#19734a", color: "#fff", borderRadius: 20, padding: 36, textAlign: "center" }}>
             <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 12, letterSpacing: "1.6px", textTransform: "uppercase", color: "#bfe6d3", marginBottom: 12 }}>Signal received</div>
             <h2 style={{ fontFamily: "'Spectral',serif", fontWeight: 700, fontSize: 30, margin: "0 0 12px" }}>Thanks - it&apos;s in the queue.</h2>

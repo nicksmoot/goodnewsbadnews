@@ -43,7 +43,7 @@ export default function LeaderboardPage() {
           Every published story earns its reporter a place on the ledger. Newsrooms browse this board when they license stories and hire contributors.
         </p>
         <p style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 12, lineHeight: 1.6, color: "#8a857a", maxWidth: 680, margin: 0, letterSpacing: "0.2px" }}>
-          Anonymous signals are welcome. But the ledger only remembers names - <Link href="/signin?join=1" style={{ color: "#19734a", fontWeight: 700 }}>join free</Link> so your work counts.
+          Every signal carries a real byline, and every published story counts here. <Link href="/signin?join=1" style={{ color: "#19734a", fontWeight: 700 }}>Join free</Link> and start yours.
         </p>
       </section>
 

@@ -116,6 +116,10 @@ img { max-width: 100%; }
 
   /* Trim oversized section top padding on phones. */
   .gnbn-section { padding-top: 36px !important; }
+
+  /* iOS Safari auto-zooms (and stays zoomed, bleeding the layout) when a
+     focused form control is under 16px. Force 16px on touch screens. */
+  input, select, textarea { font-size: 16px !important; }
 }
 
 @media (max-width: 560px) {

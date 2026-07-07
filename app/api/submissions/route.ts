@@ -3,13 +3,15 @@ import { z } from "zod";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { scan, typeToCat, coordFor, CityKey } from "@/lib/data";
+import { geocodeCross } from "@/lib/geocode";
 import { config } from "@/lib/config";
 import { stripe, stripeConfigured, SUBMISSION_PRICE } from "@/lib/stripe";
 import { siteUrl } from "@/lib/site";
 
-// Anyone can submit a signal (anonymous participation is part of the brief);
-// signed-in users get their byline. When config.paidModel is on, posting costs
-// $0.50 unless you're a member with included posts left (15/month).
+// Submitting requires an account: every signal carries a real byline. With
+// config.paidModel on, posting costs $0.50 unless the member has included
+// posts left (15/month). If Stripe env vars aren't set yet, signed-in users
+// submit free so the site keeps working before payments are configured.
 const schema = z.object({
   title: z.string().trim().min(8).max(200),
   type: z.string().max(40),
@@ -46,28 +48,29 @@ export async function POST(req: Request) {
     ? await prisma.user.findUnique({ where: { id: session.user.id } })
     : null;
 
-  const isMember = user?.plan === "member" && user?.subscriptionStatus === "active";
-  const hasIncludedPost = isMember && (user?.postsThisPeriod ?? 0) < 15;
-  const mustPay = config.paidModel && !hasIncludedPost;
-
-  if (mustPay && !user) {
+  if (!user) {
     return NextResponse.json(
-      { error: "Sign in to submit - posting costs $0.50 (free for members with included posts)." },
+      { error: "Create a free account to submit - every signal carries a real byline." },
       { status: 401 }
     );
   }
-  if (mustPay && (!stripeConfigured() || !SUBMISSION_PRICE())) {
-    return NextResponse.json({ error: "Paid submissions aren't configured yet." }, { status: 503 });
-  }
+
+  const isMember = user.plan === "member" && user.subscriptionStatus === "active";
+  const hasIncludedPost = isMember && (user.postsThisPeriod ?? 0) < 15;
+  const paymentsReady = stripeConfigured() && !!SUBMISSION_PRICE();
+  const mustPay = config.paidModel && !hasIncludedPost && paymentsReady;
 
   const result = scan(d.title + " " + d.body);
   const cat = typeToCat(d.type);
-  const coords = coordFor(d.city as CityKey, d.neighborhood, d.title + Math.random().toString(36).slice(2));
-  const by = user?.name?.trim() || "Resident";
+  // Pin accuracy: geocode the cross-streets when given; otherwise (or on
+  // failure) fall back to the neighborhood centroid with deterministic jitter.
+  const geocoded = d.cross ? await geocodeCross(d.cross, d.city as CityKey) : null;
+  const coords = geocoded ?? coordFor(d.city as CityKey, d.neighborhood, d.title + Math.random().toString(36).slice(2));
+  const by = user.name?.trim() || "Resident";
 
   const sub = await prisma.submission.create({
     data: {
-      userId: user?.id || null,
+      userId: user.id,
       title: d.title,
       cat,
       topic: d.topic,
@@ -86,7 +89,7 @@ export async function POST(req: Request) {
     },
   });
 
-  if (mustPay && user) {
+  if (mustPay) {
     try {
       const base = siteUrl();
       const checkout = await stripe().checkout.sessions.create({
@@ -108,7 +111,7 @@ export async function POST(req: Request) {
   }
 
   // Count this post against a member's monthly included quota.
-  if (isMember && user) {
+  if (isMember) {
     await prisma.user.update({
       where: { id: user.id },
       data: { postsThisPeriod: { increment: 1 } },

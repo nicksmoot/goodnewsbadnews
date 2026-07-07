@@ -6,7 +6,7 @@
 //  - requireSafetyCheck .. require the 3 resident safety attestations before a submission can advance
 
 export const config = {
-  paidModel: false,
+  paidModel: true,
   showAdmin: true,
   requireSafetyCheck: true,
 } as const;

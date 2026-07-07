@@ -66,6 +66,11 @@ export default function AdminPage() {
     load();
   }, [authStatus, load]);
 
+  const seedDemo = async () => {
+    await fetch("/api/queue/seed", { method: "POST" });
+    await load();
+  };
+
   const act = async (id: string, action: string) => {
     await fetch(`/api/queue/${id}`, {
       method: "PATCH",
@@ -123,6 +128,15 @@ export default function AdminPage() {
         {q.length === 0 && (
           <div style={{ background: "#fbf4e6", border: "1px solid #d8cab2", borderRadius: 16, padding: 28, color: "#6b675e", fontSize: 15 }}>
             No submissions yet for this city. When residents submit signals, they land here for review.
+            <div style={{ marginTop: 14 }}>
+              <button onClick={seedDemo} style={{ border: "1px solid #d8cab2", background: "#fffdf8", color: "#161616", borderRadius: 999, padding: "10px 18px", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>Seed demo queue</button>
+            </div>
+          </div>
+        )}
+
+        {q.length > 0 && (
+          <div style={{ marginTop: 0, marginBottom: 18 }}>
+            <button onClick={seedDemo} style={{ border: "1px solid #d8cab2", background: "#fffdf8", color: "#6b675e", borderRadius: 999, padding: "8px 14px", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>Seed demo queue (skips existing)</button>
           </div>
         )}
 
