@@ -69,7 +69,7 @@ function SignInInner() {
       <p style={{ fontSize: 15.5, lineHeight: 1.5, color: "#5a564d", margin: "0 0 26px" }}>
         {mode === "signin"
           ? "Sign in to submit signals, follow stories, and manage your membership."
-          : "An account lets you submit signals, follow stories, and unlock the full feed."}
+          : "An account lets you submit signals, build a public byline, and get paid when newsrooms license your stories."}
       </p>
 
       <form onSubmit={submit} style={{ display: "flex", flexDirection: "column", gap: 16 }}>

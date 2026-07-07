@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { useStore } from "@/lib/store";
 import { cityCfg } from "@/lib/data";
@@ -107,6 +108,68 @@ export default function PartnersPage() {
         </div>
       </section>
 
+      <div style={{ padding: "40px 0 6px" }}><Rule label="The licensing desk" /></div>
+
+      {/* ============ LICENSING & TALENT (the business model) ============ */}
+      <section style={{ maxWidth: 900, margin: "0 auto", padding: "22px 24px 2px", textAlign: "center" }}>
+        <h2 style={{ fontFamily: "'Spectral',serif", fontWeight: 800, fontSize: "clamp(28px,4vw,44px)", lineHeight: 1.05, letterSpacing: "-1.2px", margin: "0 0 12px" }}>License the stories. Hire the talent. Pay the writers.</h2>
+        <p style={{ fontFamily: "'Spectral',serif", fontStyle: "italic", fontSize: 17, lineHeight: 1.5, color: "#5a564d", margin: "0 auto", maxWidth: 620 }}>
+          Every license pays the resident who reported the story. That&apos;s the deal that keeps the signal coming.
+        </p>
+      </section>
+      <section style={{ maxWidth: 1240, margin: "0 auto", padding: "26px 24px 8px" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 18, alignItems: "stretch" }}>
+          {/* Annual license */}
+          <div style={{ background: "#fffaf1", border: "2px solid #19734a", borderRadius: 16, padding: 26, display: "flex", flexDirection: "column" }}>
+            <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 11, letterSpacing: "1.6px", textTransform: "uppercase", color: "#19734a", marginBottom: 12 }}>Annual newsroom license</div>
+            <div style={{ fontFamily: "'Spectral',serif", fontWeight: 800, fontSize: 34, letterSpacing: "-1px", lineHeight: 1, marginBottom: 4 }}>Priced per market</div>
+            <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 11.5, color: "#8a857a", marginBottom: 16 }}>billed annually · talk to us</div>
+            <ul style={{ margin: 0, paddingLeft: 18, fontSize: 14.5, lineHeight: 1.75, color: "#3a362e", flex: 1 }}>
+              <li>License and reprint stories from your market, all year</li>
+              <li>We handle writer payments on every story you run</li>
+              <li><strong>Direct hiring rights</strong> from the contributor community, included</li>
+              <li>Early access to pattern reports and the full signal feed</li>
+            </ul>
+            <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 11, color: "#19734a", marginTop: 16, fontWeight: 700 }}>Best for dailies &amp; broadcast</div>
+          </div>
+          {/* Per-story */}
+          <div style={{ background: "#fffaf1", border: "1px solid #d8cab2", borderRadius: 16, padding: 26, display: "flex", flexDirection: "column" }}>
+            <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 11, letterSpacing: "1.6px", textTransform: "uppercase", color: "#9a6a12", marginBottom: 12 }}>Per-story exclusive</div>
+            <div style={{ fontFamily: "'Spectral',serif", fontWeight: 800, fontSize: 34, letterSpacing: "-1px", lineHeight: 1, marginBottom: 4 }}>$100 <span style={{ fontSize: 18, fontWeight: 700, color: "#6b675e" }}>/ story</span></div>
+            <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 11.5, color: "#8a857a", marginBottom: 16 }}>no commitment · pay as you print</div>
+            <ul style={{ margin: 0, paddingLeft: 18, fontSize: 14.5, lineHeight: 1.75, color: "#3a362e", flex: 1 }}>
+              <li>Pick from the stories getting traction on the feed</li>
+              <li><strong>Exclusive print rights in your market</strong></li>
+              <li>The writer is paid on every license</li>
+              <li>Full story, photos, and contributor context included</li>
+            </ul>
+            <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 11, color: "#9a6a12", marginTop: 16, fontWeight: 700 }}>Best for weeklies &amp; independents</div>
+          </div>
+          {/* Talent */}
+          <div style={{ background: "#161616", color: "#fff", border: "1px solid #161616", borderRadius: 16, padding: 26, display: "flex", flexDirection: "column" }}>
+            <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 11, letterSpacing: "1.6px", textTransform: "uppercase", color: "#c99a2e", marginBottom: 12 }}>Talent placement</div>
+            <div style={{ fontFamily: "'Spectral',serif", fontWeight: 800, fontSize: 34, letterSpacing: "-1px", lineHeight: 1, marginBottom: 4 }}>$10,000 <span style={{ fontSize: 18, fontWeight: 700, color: "#8a857a" }}>/ hire</span></div>
+            <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 11.5, color: "#8a857a", marginBottom: 16 }}>waived for annual partners</div>
+            <ul style={{ margin: 0, paddingLeft: 18, fontSize: 14.5, lineHeight: 1.75, color: "#e7e1d4", flex: 1 }}>
+              <li>Hire journalists we&apos;ve trained inside this community</li>
+              <li>Contributors with a public record: real bylines, real beats</li>
+              <li>Vetted through our editorial standards and moderation</li>
+              <li><strong>Included free</strong> with an annual newsroom license</li>
+            </ul>
+            <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 11, color: "#c99a2e", marginTop: 16, fontWeight: 700 }}>The farm team for local news</div>
+          </div>
+        </div>
+      </section>
+
+      {/* Writers get paid strip */}
+      <section style={{ maxWidth: 1240, margin: "0 auto", padding: "18px 24px 8px" }}>
+        <div style={{ background: "#19734a10", border: "1px solid #19734a40", borderRadius: 14, padding: "18px 22px", textAlign: "center" }}>
+          <p style={{ fontFamily: "'Spectral',serif", fontSize: 16.5, lineHeight: 1.55, color: "#161616", margin: 0 }}>
+            <strong style={{ color: "#19734a" }}>Residents: your story can pay you.</strong> When a newsroom licenses a story you reported, you get paid. Write enough of them well, and a newsroom may hire you outright. <Link href="/signin?join=1" style={{ color: "#19734a", fontWeight: 700 }}>Join and start your byline &rarr;</Link>
+          </p>
+        </div>
+      </section>
+
       {/* ============ WHAT PARTNERS GET + FORM ============ */}
       <section style={{ maxWidth: 1240, margin: "0 auto", padding: "50px 24px 8px" }}>
         <div className="gnbn-dark-panel" style={{ background: "#161616", color: "#fff", borderRadius: 24, padding: 42, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 40, alignItems: "start" }}>
@@ -114,10 +177,11 @@ export default function PartnersPage() {
             <h2 style={{ fontFamily: "'Spectral',serif", fontWeight: 800, fontSize: 32, lineHeight: 1.05, letterSpacing: "-0.8px", margin: "0 0 14px" }}>What partners get</h2>
             <ul style={{ margin: 0, paddingLeft: 18, fontSize: 15, lineHeight: 1.9, color: "#e7e1d4" }}>
               <li>A moderated, location-tagged signal feed for your city</li>
+              <li>Story licensing with market-exclusive print rights</li>
               <li>Early access to pattern reports before they&apos;re public</li>
-              <li>A pipeline of resident contributors and tips</li>
+              <li>Hiring rights to journalists trained in this community</li>
+              <li>Writer payments handled by us on every license</li>
               <li>Co-branded &quot;In partnership with&quot; labeling on stories</li>
-              <li>Shared editorial standards that protect contributors</li>
             </ul>
           </div>
           <div style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.14)", borderRadius: 16, padding: 24 }}>
@@ -136,6 +200,12 @@ export default function PartnersPage() {
                     <option style={{ color: "#161616" }}>Spokane</option>
                     <option style={{ color: "#161616" }}>Honolulu</option>
                     <option style={{ color: "#161616" }}>Another city</option>
+                  </select>
+                  <select defaultValue="Annual newsroom license" style={darkInput} aria-label="What are you interested in?">
+                    <option style={{ color: "#161616" }}>Annual newsroom license</option>
+                    <option style={{ color: "#161616" }}>Per-story licensing ($100/story)</option>
+                    <option style={{ color: "#161616" }}>Hiring from the community</option>
+                    <option style={{ color: "#161616" }}>Co-reporting partnership</option>
                   </select>
                   <input value={partner.email} onChange={(e) => set("email", e.target.value)} placeholder="Work email" style={darkInput} />
                   <textarea value={partner.note} onChange={(e) => set("note", e.target.value)} placeholder="What kind of stories does your newsroom cover?" style={{ ...darkInput, minHeight: 84, resize: "vertical", fontFamily: "'Public Sans',sans-serif" }} />
