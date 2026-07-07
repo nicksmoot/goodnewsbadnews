@@ -7,6 +7,48 @@ import ActivityPanel from "@/components/ActivityPanel";
 
 export const dynamic = "force-dynamic";
 
+const WF_COLOR: Record<string, string> = {
+  New: "#8a857a", Review: "#9a6a12", Verified: "#285d83", Published: "#19734a",
+};
+const WF_LABEL: Record<string, string> = {
+  New: "Submitted", Review: "In review", Verified: "Verified", Published: "Published",
+};
+
+async function YourStories({ userId }: { userId: string }) {
+  const subs = await prisma.submission.findMany({
+    where: { userId },
+    orderBy: { createdAt: "desc" },
+    take: 25,
+  });
+  return (
+    <div style={{ background: "#fffaf1", border: "1px solid #d8cab2", borderRadius: 18, padding: 24, marginTop: 22 }}>
+      <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 11, letterSpacing: "1.4px", textTransform: "uppercase", color: "#9a6a12", marginBottom: 14 }}>Your stories</div>
+      {subs.length === 0 ? (
+        <p style={{ fontSize: 14, color: "#8a857a", margin: 0 }}>
+          You haven&apos;t submitted a signal yet. When you do, it shows up here with its live moderation status - and once newsroom licensing launches, your payouts will too.
+        </p>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          {subs.map((s) => {
+            const color = WF_COLOR[s.wf] || "#8a857a";
+            const inner = (
+              <span style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 12, flexWrap: "wrap" }}>
+                <span style={{ fontFamily: "'Spectral',serif", fontWeight: 700, fontSize: 15, lineHeight: 1.25, color: "#161616" }}>{s.title}</span>
+                <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontWeight: 600, letterSpacing: "0.6px", fontSize: 10.5, textTransform: "uppercase", padding: "3px 8px", borderRadius: 999, color, border: `1px solid ${color}55`, whiteSpace: "nowrap" }}>{WF_LABEL[s.wf] || s.wf}</span>
+              </span>
+            );
+            return s.wf === "Published" ? (
+              <Link key={s.id} href={`/post/p-${s.id}`} style={{ textDecoration: "none", background: "#fffdf8", border: "1px solid #e4d8c2", borderRadius: 12, padding: "11px 13px" }}>{inner}</Link>
+            ) : (
+              <div key={s.id} style={{ background: "#fffdf8", border: "1px solid #e4d8c2", borderRadius: 12, padding: "11px 13px" }}>{inner}</div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default async function AccountPage() {
   const session = await auth();
   if (!session?.user?.id) redirect("/signin?callbackUrl=/account");
@@ -50,6 +92,8 @@ export default async function AccountPage() {
           </button>
         </div>
       )}
+
+      <YourStories userId={user.id} />
 
       <ActivityPanel />
 

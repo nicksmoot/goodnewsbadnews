@@ -58,3 +58,27 @@ npm run dev
   for non-members).
 - **Stage 3 — posting:** move submissions into the DB, enforce the
   15-posts/month member quota, and charge `$0.50` per post beyond it.
+
+## Making yourself an admin (moderation access)
+
+The moderation board (`/admin`) and its APIs are now gated by a `role` column
+on the `User` table. After creating your own account on the site:
+
+1. Vercel → **Storage** → your Neon database → **Open in Neon Console** →
+   **SQL Editor**.
+2. Run (with your real email):
+   ```sql
+   UPDATE "User" SET role = 'admin' WHERE email = 'you@example.com';
+   ```
+3. Sign out and back in on the site (the role rides in the session token).
+
+## What's real now (no Stripe required)
+
+- **Submissions** are stored in Postgres: anyone can submit (signed-in users
+  get their byline), admins moderate at `/admin`, and publishing pushes the
+  story live to every visitor's feed, map, and story pages.
+- **Digest signups** are stored in `DigestSubscriber` (email, city,
+  preference) - your launch audience list. Sending comes later via Resend.
+- **Partner inquiries** are stored in `PartnerInquiry` (org, interest, email,
+  note) - your newsroom sales pipeline. Query both tables in the Neon SQL
+  editor anytime.

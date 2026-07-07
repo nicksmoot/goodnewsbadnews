@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useStore } from "@/lib/store";
 import { cityCfg, CITIES } from "@/lib/data";
-import { cityPosts, cityQueue, decorateList } from "@/lib/selectors";
+import { cityPosts, decorateList } from "@/lib/selectors";
 import { HomeCard, SkeletonCards } from "@/components/cards";
 
 const TICKERS: Record<string, string[]> = {
@@ -40,7 +40,7 @@ const howCard = (n: string, title: string, body: string) => (
 );
 
 export default function HomePage() {
-  const { posts, queue, city, seenLocal, setCity, ready } = useStore();
+  const { posts, city, stats, seenLocal, setCity, ready } = useStore();
   const router = useRouter();
   const cfg = cityCfg(city);
 
@@ -48,7 +48,7 @@ export default function HomePage() {
   const homePosts = decorateList([...cp].sort((a, b) => a.age - b.age).slice(0, 6), seenLocal);
   const trending = decorateList([...cp].sort((a, b) => b.helpful - a.helpful).slice(0, 5), seenLocal);
   const statPublished = cp.length;
-  const statQueue = cityQueue(queue, city).filter((q) => q.wf !== "Published").length;
+  const statQueue = stats[city]?.queue ?? 0;
 
   const tk = TICKERS[city] || TICKERS.spokane;
   const tickerText = "  ·  " + tk.join("  ·  ") + "  ·  ";

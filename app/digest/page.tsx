@@ -12,9 +12,33 @@ const DIG_DEFS: [string, string][] = [
 ];
 
 export default function DigestPage() {
-  const { city, digestPref, setDigestPref, subscribed, subscribe } = useStore();
+  const { city, digestPref, setDigestPref, subscribed, markSubscribed } = useStore();
   const cfg = cityCfg(city);
   const [email, setEmail] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+
+  const subscribe = async () => {
+    setError("");
+    if (!/.+@.+\..+/.test(email)) { setError("Enter a valid email address."); return; }
+    setBusy(true);
+    try {
+      const res = await fetch("/api/digest", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, city, preference: digestPref }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setError(data.error || "Could not subscribe. Please try again.");
+      } else {
+        markSubscribed();
+      }
+    } catch {
+      setError("Network problem. Please try again.");
+    }
+    setBusy(false);
+  };
 
   return (
     <div>
@@ -37,8 +61,11 @@ export default function DigestPage() {
 
         <div style={{ background: "#fffaf1", border: "1px solid #d8cab2", borderRadius: 16, padding: 22, display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
           <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" style={{ flex: 1, minWidth: 220, border: "1px solid #d8cab2", background: "#fffdf8", padding: 13, borderRadius: 11, fontSize: 15 }} />
-          <button onClick={subscribe} style={{ border: "none", background: "#161616", color: "#fff", borderRadius: 999, padding: "13px 24px", fontWeight: 700, fontSize: 15, cursor: "pointer" }}>{subscribed ? "Update subscription" : "Subscribe"}</button>
+          <button onClick={subscribe} disabled={busy} style={{ border: "none", background: "#161616", color: "#fff", borderRadius: 999, padding: "13px 24px", fontWeight: 700, fontSize: 15, cursor: busy ? "default" : "pointer", opacity: busy ? 0.7 : 1 }}>{busy ? "Saving…" : subscribed ? "Update subscription" : "Subscribe"}</button>
         </div>
+        {error && (
+          <div style={{ marginTop: 14, background: "#a3342914", border: "1px solid #a3342959", borderRadius: 12, padding: "13px 16px", fontSize: 14, color: "#a33429" }}>{error}</div>
+        )}
         {subscribed && (
           <div style={{ marginTop: 14, background: "#19734a14", border: "1px solid #19734a59", borderRadius: 12, padding: "13px 16px", fontSize: 14, color: "#19734a" }}>You&apos;re subscribed to: <strong>{digestPref}</strong>. Look for the first Saturday briefing in your inbox.</div>
         )}

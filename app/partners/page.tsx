@@ -42,9 +42,33 @@ const stepCard = (n: string, title: string, body: string) => (
 export default function PartnersPage() {
   const { city } = useStore();
   const cfg = cityCfg(city);
-  const [partner, setPartner] = useState({ org: "", city: "Spokane", email: "", note: "" });
+  const [partner, setPartner] = useState({ org: "", city: "Spokane", interest: "Annual newsroom license", email: "", note: "" });
   const [sent, setSent] = useState(false);
-  const set = (k: string, v: string) => { setPartner((s) => ({ ...s, [k]: v })); setSent(false); };
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const set = (k: string, v: string) => { setPartner((s) => ({ ...s, [k]: v })); setSent(false); setError(""); };
+
+  const send = async () => {
+    setError("");
+    setBusy(true);
+    try {
+      const res = await fetch("/api/partner", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(partner),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setError(data.error || "Could not send your inquiry. Please try again.");
+      } else {
+        setSent(true);
+        try { window.scrollTo(0, 0); } catch {}
+      }
+    } catch {
+      setError("Network problem. Please try again.");
+    }
+    setBusy(false);
+  };
 
   return (
     <div>
@@ -201,7 +225,7 @@ export default function PartnersPage() {
                     <option style={{ color: "#161616" }}>Honolulu</option>
                     <option style={{ color: "#161616" }}>Another city</option>
                   </select>
-                  <select defaultValue="Annual newsroom license" style={darkInput} aria-label="What are you interested in?">
+                  <select value={partner.interest} onChange={(e) => set("interest", e.target.value)} style={darkInput} aria-label="What are you interested in?">
                     <option style={{ color: "#161616" }}>Annual newsroom license</option>
                     <option style={{ color: "#161616" }}>Per-story licensing ($100/story)</option>
                     <option style={{ color: "#161616" }}>Hiring from the community</option>
@@ -209,7 +233,10 @@ export default function PartnersPage() {
                   </select>
                   <input value={partner.email} onChange={(e) => set("email", e.target.value)} placeholder="Work email" style={darkInput} />
                   <textarea value={partner.note} onChange={(e) => set("note", e.target.value)} placeholder="What kind of stories does your newsroom cover?" style={{ ...darkInput, minHeight: 84, resize: "vertical", fontFamily: "'Public Sans',sans-serif" }} />
-                  <button onClick={() => { setSent(true); try { window.scrollTo(0, 0); } catch {} }} style={{ border: "none", background: "#19734a", color: "#fff", borderRadius: 999, padding: "13px 22px", fontWeight: 700, fontSize: 15, cursor: "pointer" }}>Request a partnership call</button>
+                  {error && (
+                    <div style={{ background: "rgba(163,52,41,0.25)", border: "1px solid rgba(232,154,143,0.5)", borderRadius: 11, padding: "11px 13px", fontSize: 13.5, color: "#e89a8f" }}>{error}</div>
+                  )}
+                  <button onClick={send} disabled={busy} style={{ border: "none", background: "#19734a", color: "#fff", borderRadius: 999, padding: "13px 22px", fontWeight: 700, fontSize: 15, cursor: busy ? "default" : "pointer", opacity: busy ? 0.7 : 1 }}>{busy ? "Sending…" : "Request a partnership call"}</button>
                 </div>
               </>
             )}

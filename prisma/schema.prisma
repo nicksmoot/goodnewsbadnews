@@ -18,6 +18,7 @@ model User {
   email        String  @unique
   name         String?
   passwordHash String
+  role         String  @default("user") // "user" | "admin" (gates /admin + moderation APIs)
 
   // Membership / billing (wired to Stripe in a later stage).
   plan               String    @default("free") // "free" | "member"
@@ -32,5 +33,58 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  submissions Submission[]
+
   @@index([email])
+}
+
+// A resident-submitted signal moving through moderation. Published rows are
+// served publicly and merged with the seed stories in the feed/map.
+model Submission {
+  id     String  @id @default(cuid())
+  user   User?   @relation(fields: [userId], references: [id])
+  userId String?
+
+  title  String
+  cat    String // good | bad | both | opportunity | signal | pattern
+  topic  String
+  hood   String
+  cross  String  @default("")
+  body   String  @db.Text
+  tags   String  @default("") // comma-separated
+  photo  String  @default("") @db.Text // data URL for the pilot; move to Blob later
+  by     String  @default("Resident")
+  city   String
+  lat    Float
+  lng    Float
+
+  wf        String @default("New") // New | Review | Verified | Published | (rejected rows are deleted)
+  status    String @default("Submitted")
+  scanLevel String @default("clean")
+  scanMsg   String @default("") @db.Text
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  publishedAt DateTime?
+
+  @@index([city, wf])
+  @@index([userId])
+}
+
+model DigestSubscriber {
+  id         String   @id @default(cuid())
+  email      String   @unique
+  city       String
+  preference String   @default("All Signals")
+  createdAt  DateTime @default(now())
+}
+
+model PartnerInquiry {
+  id        String   @id @default(cuid())
+  org       String
+  city      String
+  interest  String
+  email     String
+  note      String   @default("") @db.Text
+  createdAt DateTime @default(now())
 }

@@ -26,7 +26,7 @@ const MIN_TITLE = 8;
 const MIN_BODY = 300;
 
 export default function SubmitPage() {
-  const { city, submitSignal } = useStore();
+  const { city, refreshPosts } = useStore();
   const { status } = useSession();
   const cfg = cityCfg(city);
 
@@ -36,6 +36,8 @@ export default function SubmitPage() {
   const [scanMessage, setScanMessage] = useState("");
   const [safetyWarn, setSafetyWarn] = useState(false);
   const [substanceWarn, setSubstanceWarn] = useState(false);
+  const [sendBusy, setSendBusy] = useState(false);
+  const [sendError, setSendError] = useState("");
 
   useCityEffect(city, () => {
     setForm(blankForm(cityCfg(city).hoods[0]));
@@ -67,11 +69,33 @@ export default function SubmitPage() {
     goStep(3);
   };
 
-  const doSubmit = () => {
-    const { scanMessage } = submitSignal(form);
-    setScanMessage(scanMessage);
-    setSubmitted(true);
-    try { window.scrollTo(0, 0); } catch {}
+  const doSubmit = async () => {
+    setSendBusy(true);
+    setSendError("");
+    try {
+      const res = await fetch("/api/submissions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: form.title, type: form.type, topic: form.topic,
+          neighborhood: form.neighborhood, cross: form.cross, body: form.body,
+          tags: form.tags, photo: form.photo, city,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setSendError(data.error || "Something went wrong submitting your signal. Please try again.");
+        setSendBusy(false);
+        return;
+      }
+      setScanMessage(data.scanMessage || "");
+      setSubmitted(true);
+      refreshPosts();
+      try { window.scrollTo(0, 0); } catch {}
+    } catch {
+      setSendError("Network problem submitting your signal. Please try again.");
+    }
+    setSendBusy(false);
   };
 
   const resetForm = () => { setForm(blankForm(cfg.hoods[0])); setStep(1); setSubmitted(false); };
@@ -249,9 +273,12 @@ export default function SubmitPage() {
                   <p style={{ fontSize: 15, lineHeight: 1.55, color: "#3a362e", margin: "0 0 8px" }}>{form.body || "No description entered."}</p>
                 </div>
                 <p style={{ fontSize: 13.5, color: "#6b675e", margin: "16px 0 0" }}>{submitButtonNote}</p>
+                {sendError && (
+                  <div style={{ marginTop: 14, background: "#a3342914", border: "1px solid #a3342959", borderRadius: 12, padding: "13px 15px", fontSize: 13.5, color: "#a33429" }}>{sendError}</div>
+                )}
                 <div style={{ marginTop: 14, display: "flex", gap: 10, flexWrap: "wrap" }}>
                   <button onClick={() => goStep(2)} style={{ border: "1px solid #d8cab2", background: "#fffdf8", color: "#161616", borderRadius: 999, padding: "13px 22px", fontWeight: 700, fontSize: 15, cursor: "pointer" }}>&larr; Back</button>
-                  <button onClick={doSubmit} style={{ border: "none", background: "#19734a", color: "#fff", borderRadius: 999, padding: "13px 26px", fontWeight: 700, fontSize: 15, cursor: "pointer" }}>{submitButtonLabel}</button>
+                  <button onClick={doSubmit} disabled={sendBusy} style={{ border: "none", background: "#19734a", color: "#fff", borderRadius: 999, padding: "13px 26px", fontWeight: 700, fontSize: 15, cursor: sendBusy ? "default" : "pointer", opacity: sendBusy ? 0.7 : 1 }}>{sendBusy ? "Submitting…" : submitButtonLabel}</button>
                 </div>
               </>
             )}
