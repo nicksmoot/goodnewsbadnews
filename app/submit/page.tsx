@@ -89,6 +89,7 @@ export default function SubmitPage() {
         setSendBusy(false);
         return;
       }
+      if (data.payUrl) { window.location.href = data.payUrl; return; }
       setScanMessage(data.scanMessage || "");
       setSubmitted(true);
       refreshPosts();

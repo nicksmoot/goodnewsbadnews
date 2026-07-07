@@ -12,6 +12,7 @@ export async function GET() {
     return NextResponse.json({ error: "Admin access required." }, { status: 403 });
   }
   const rows = await prisma.submission.findMany({
+    where: { wf: { in: ["New", "Review", "Verified", "Published"] } },
     orderBy: { createdAt: "desc" },
     take: 300,
   });

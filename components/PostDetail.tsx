@@ -8,6 +8,7 @@ import { useStore } from "@/lib/store";
 import { decorate } from "@/lib/data";
 import { slugify } from "@/lib/slug";
 import ShareRow from "@/components/ShareRow";
+import { CheckoutButton } from "@/components/MemberCTA";
 
 const chipLink: React.CSSProperties = {
   fontFamily: "'IBM Plex Mono',monospace", fontSize: 11.5, color: "#3a362e", textDecoration: "none",
@@ -65,14 +66,18 @@ export default function PostDetail({ id }: { id: string }) {
             <p style={{ fontSize: 15, lineHeight: 1.55, color: "#cfc8b9", margin: "0 0 18px", maxWidth: 520 }}>
               $5/month unlocks every full story and pattern report in the feed, plus 15 signal submissions a month included (then $0.50 each).
             </p>
-            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-              <Link href={signedIn ? "/account" : `/signin?callbackUrl=/post/${id}`} style={{ textDecoration: "none", background: "#19734a", color: "#fff", borderRadius: 999, padding: "12px 22px", fontWeight: 700, fontSize: 14.5 }}>
-                {signedIn ? "Become a member" : "Sign in to continue"}
-              </Link>
-              {!signedIn && (
-                <Link href="/signin?callbackUrl=/account" style={{ textDecoration: "none", border: "1px solid rgba(255,255,255,0.45)", color: "#fff", borderRadius: 999, padding: "12px 22px", fontWeight: 700, fontSize: 14.5 }}>
-                  Become a member
-                </Link>
+            <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+              {signedIn ? (
+                <CheckoutButton variant="dark" label="Become a member - $5/month" />
+              ) : (
+                <>
+                  <Link href={`/signin?callbackUrl=/post/${id}`} style={{ textDecoration: "none", background: "#19734a", color: "#fff", borderRadius: 999, padding: "12px 22px", fontWeight: 700, fontSize: 14.5 }}>
+                    Sign in to continue
+                  </Link>
+                  <Link href="/signin?join=1&callbackUrl=/account" style={{ textDecoration: "none", border: "1px solid rgba(255,255,255,0.45)", color: "#fff", borderRadius: 999, padding: "12px 22px", fontWeight: 700, fontSize: 14.5 }}>
+                    Become a member
+                  </Link>
+                </>
               )}
             </div>
           </div>

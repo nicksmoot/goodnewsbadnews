@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import SignOutButton from "@/components/SignOutButton";
+import { CheckoutButton, PortalButton } from "@/components/MemberCTA";
 import ActivityPanel from "@/components/ActivityPanel";
 
 export const dynamic = "force-dynamic";
@@ -49,7 +50,7 @@ async function YourStories({ userId }: { userId: string }) {
   );
 }
 
-export default async function AccountPage() {
+export default async function AccountPage({ searchParams }: { searchParams?: { welcome?: string } }) {
   const session = await auth();
   if (!session?.user?.id) redirect("/signin?callbackUrl=/account");
 
@@ -86,6 +87,18 @@ export default async function AccountPage() {
         )}
       </div>
 
+      {searchParams?.welcome === "member" && isMember && (
+        <div style={{ background: "#19734a", color: "#fff", borderRadius: 16, padding: "18px 22px", marginBottom: 18 }}>
+          <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase", color: "#bfe6d3", marginBottom: 6 }}>Welcome, member</div>
+          <p style={{ margin: 0, fontSize: 15, lineHeight: 1.5 }}>You&apos;re in. Every full story and pattern report is unlocked, and 15 signal submissions a month are included.</p>
+        </div>
+      )}
+      {searchParams?.welcome === "member" && !isMember && (
+        <div style={{ background: "#fff8eb", border: "1px solid #c99a2e80", borderRadius: 16, padding: "16px 20px", marginBottom: 18, fontSize: 14.5, color: "#5a564d" }}>
+          Payment received - your membership activates within a few seconds. Refresh this page shortly.
+        </div>
+      )}
+
       <div style={{ background: "#fffaf1", border: "1px solid #d8cab2", borderRadius: 18, padding: 26, boxShadow: "0 10px 34px rgba(0,0,0,0.05)" }}>
         {row("Email", user.email)}
         {row("Membership", isMember ? "Member — full access" : "Free — teasers only")}
@@ -100,9 +113,18 @@ export default async function AccountPage() {
           <p style={{ fontSize: 15, lineHeight: 1.55, color: "#cfc8b9", margin: "0 0 18px" }}>
             Members unlock every full story and pattern report, and get <strong>15 signal submissions a month</strong> included (then $0.50 each).
           </p>
-          <button disabled style={{ border: "1px solid rgba(255,255,255,0.35)", background: "rgba(255,255,255,0.08)", color: "#e7e1d4", borderRadius: 999, padding: "12px 22px", fontWeight: 700, fontSize: 15, cursor: "not-allowed" }}>
-            Membership checkout — coming soon
-          </button>
+          <CheckoutButton variant="dark" />
+          <p style={{ fontSize: 12.5, color: "#8a857a", margin: "12px 0 0" }}>Apple Pay and all major cards. Cancel anytime.</p>
+        </div>
+      )}
+
+      {isMember && (
+        <div style={{ background: "#fffaf1", border: "1px solid #19734a59", borderRadius: 18, padding: 24, marginTop: 22 }}>
+          <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 11, letterSpacing: "1.4px", textTransform: "uppercase", color: "#19734a", marginBottom: 10 }}>Membership</div>
+          <p style={{ fontSize: 14.5, lineHeight: 1.55, color: "#3a362e", margin: "0 0 14px" }}>
+            Active - full stories and pattern reports unlocked, {Math.max(0, 15 - user.postsThisPeriod)} of 15 included submissions left this period{user.currentPeriodEnd ? `, renews ${new Intl.DateTimeFormat("en-US", { month: "long", day: "numeric" }).format(user.currentPeriodEnd)}` : ""}.
+          </p>
+          <PortalButton />
         </div>
       )}
 

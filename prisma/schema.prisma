@@ -58,7 +58,8 @@ model Submission {
   lat    Float
   lng    Float
 
-  wf        String @default("New") // New | Review | Verified | Published | (rejected rows are deleted)
+  wf        String @default("New") // PendingPayment | New | Review | Verified | Published (rejected rows are deleted)
+  stripeSessionId String? @unique // set when a paid submission awaits checkout
   status    String @default("Submitted")
   scanLevel String @default("clean")
   scanMsg   String @default("") @db.Text

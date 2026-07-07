@@ -19,5 +19,6 @@ declare module "next-auth/jwt" {
     id?: string;
     plan?: string;
     role?: string;
+    refreshedAt?: number;
   }
 }
