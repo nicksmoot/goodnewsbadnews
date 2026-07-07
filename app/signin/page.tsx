@@ -80,7 +80,7 @@ function SignInInner() {
             {benefit("3", "#8a5e0f", "Turn reporting into a career", "Partner newsrooms hire directly from this community. Strong contributors get co-reporting invitations, editorial mentorship, and real job offers.")}
           </div>
           <div style={{ borderTop: "1px solid #e4d8c2", marginTop: 22, paddingTop: 14, fontFamily: "'IBM Plex Mono',monospace", fontSize: 11, color: "#8a857a", letterSpacing: "0.5px", lineHeight: 1.7 }}>
-            Free to join · Byline on everything you publish · No gossip, ever
+            Free to join · Byline on everything you publish · The first 250 members are founding contributors, and the number is yours forever
           </div>
         </aside>
       )}

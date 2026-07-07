@@ -58,6 +58,8 @@ export default async function AccountPage() {
 
   const isMember = user.plan === "member" && user.subscriptionStatus === "active";
   const postsLeft = isMember ? Math.max(0, 15 - user.postsThisPeriod) : 0;
+  const memberNo = await prisma.user.count({ where: { createdAt: { lte: user.createdAt } } });
+  const isFounding = memberNo <= 250;
 
   const row = (label: string, value: string) => (
     <div style={{ display: "flex", justifyContent: "space-between", borderTop: "1px solid #e4d8c2", padding: "13px 0", fontSize: 14.5 }}>
@@ -69,9 +71,20 @@ export default async function AccountPage() {
   return (
     <section style={{ maxWidth: 640, margin: "0 auto", padding: "56px 24px 80px" }}>
       <div style={{ fontFamily: "'IBM Plex Mono',monospace", textTransform: "uppercase", letterSpacing: "1.6px", fontSize: 12, color: "#6b675e", marginBottom: 14 }}>Your account</div>
-      <h1 style={{ fontFamily: "'Spectral',serif", fontWeight: 800, fontSize: "clamp(32px,4.4vw,46px)", lineHeight: 1.03, letterSpacing: "-1.4px", margin: "0 0 24px" }}>
+      <h1 style={{ fontFamily: "'Spectral',serif", fontWeight: 800, fontSize: "clamp(32px,4.4vw,46px)", lineHeight: 1.03, letterSpacing: "-1.4px", margin: "0 0 14px" }}>
         {user.name ? `Hello, ${user.name}.` : "Your account."}
       </h1>
+
+      <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", marginBottom: 22 }}>
+        <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 11.5, fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase", color: "#161616", border: "1px solid #d8cab2", background: "#fffaf1", borderRadius: 999, padding: "6px 12px" }}>
+          Member No. {memberNo}
+        </span>
+        {isFounding && (
+          <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 11.5, fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase", color: "#8a5e0f", border: "1px solid #c99a2e80", background: "#c99a2e21", borderRadius: 999, padding: "6px 12px" }}>
+          ★ Founding contributor
+          </span>
+        )}
+      </div>
 
       <div style={{ background: "#fffaf1", border: "1px solid #d8cab2", borderRadius: 18, padding: 26, boxShadow: "0 10px 34px rgba(0,0,0,0.05)" }}>
         {row("Email", user.email)}

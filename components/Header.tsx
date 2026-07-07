@@ -16,6 +16,7 @@ const NAV_LINKS: [string, string][] = [
   ["/bad", "Bad"],
   ["/both", "Both"],
   ["/map", "Map"],
+  ["/leaderboard", "Ledger"],
   ["/digest", "Digest"],
   ["/about", "About"],
   ["/standards", "Standards"],

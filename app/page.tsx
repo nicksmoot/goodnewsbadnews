@@ -197,6 +197,16 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Ledger band */}
+      <section style={{ maxWidth: 1240, margin: "0 auto", padding: "26px 24px 0" }}>
+        <Link href="/leaderboard" style={{ textDecoration: "none", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 14, flexWrap: "wrap", background: "#fff8eb", border: "1px solid #c99a2e80", borderLeft: "5px solid #c99a2e", borderRadius: 14, padding: "16px 20px" }}>
+          <span style={{ fontFamily: "'Spectral',serif", fontWeight: 700, fontSize: 17, color: "#161616" }}>
+            The Contributors&apos; Ledger: who&apos;s putting {cfg.name} on the record
+          </span>
+          <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 12, fontWeight: 700, color: "#19734a", whiteSpace: "nowrap" }}>See the board &rarr;</span>
+        </Link>
+      </section>
+
       {/* Latest signals */}
       <section className="gnbn-section" style={{ maxWidth: 1240, margin: "0 auto", padding: "50px 24px 10px" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", borderBottom: "1px solid #d8cab2", paddingBottom: 12, marginBottom: 26, gap: 16, flexWrap: "wrap" }}>

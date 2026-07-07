@@ -6,7 +6,7 @@ import { slugify, ALL_HOODS } from "@/lib/slug";
 export default function sitemap(): MetadataRoute.Sitemap {
   const base = siteUrl();
   const staticRoutes = [
-    "", "/latest", "/good", "/bad", "/both", "/map", "/submit",
+    "", "/latest", "/good", "/bad", "/both", "/map", "/leaderboard", "/submit",
     "/digest", "/partners", "/about", "/standards",
   ].map((path) => ({
     url: `${base}${path}`,
