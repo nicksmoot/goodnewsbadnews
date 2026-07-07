@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useStore } from "@/lib/store";
@@ -9,19 +10,51 @@ import { CityKey } from "@/lib/data";
 const INK = "#161616";
 const MUTED = "#6b675e";
 
+const NAV_LINKS: [string, string][] = [
+  ["/latest", "Latest"],
+  ["/good", "Good"],
+  ["/bad", "Bad"],
+  ["/both", "Both"],
+  ["/map", "Map"],
+  ["/digest", "Digest"],
+  ["/about", "About"],
+  ["/standards", "Standards"],
+  ["/partners", "Partners"],
+];
+
 export default function Header() {
   const { city, setCity } = useStore();
   const { data: session, status } = useSession();
   const isAdmin = session?.user?.role === "admin";
   const pathname = usePathname() || "/";
+  const [open, setOpen] = useState(false);
+
+  // Close the mobile menu on navigation.
+  useEffect(() => { setOpen(false); }, [pathname]);
 
   const navColor = (active: boolean) => (active ? INK : MUTED);
   const is = (p: string) => pathname === p;
 
   const link = (href: string, label: string, active: boolean, extra?: React.CSSProperties) => (
     <Link
+      key={href}
       href={href}
       style={{ textDecoration: "none", padding: "7px 11px", borderRadius: 8, color: navColor(active), ...extra }}
+    >
+      {label}
+    </Link>
+  );
+
+  const mobileRow = (href: string, label: string) => (
+    <Link
+      key={href}
+      href={href}
+      onClick={() => setOpen(false)}
+      style={{
+        display: "block", textDecoration: "none", padding: "14px 6px",
+        fontFamily: "'Spectral',serif", fontWeight: 700, fontSize: 19,
+        color: is(href) ? "#19734a" : INK, borderBottom: "1px solid #ece1cd",
+      }}
     >
       {label}
     </Link>
@@ -39,19 +72,21 @@ export default function Header() {
         style={{
           maxWidth: 1240, margin: "0 auto", padding: "13px 24px",
           display: "flex", justifyContent: "space-between", alignItems: "center",
-          gap: 20, flexWrap: "wrap",
+          gap: 20,
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: 11, flexShrink: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 11, flexShrink: 0, minWidth: 0 }}>
           <Link href="/" style={{ display: "flex", alignItems: "baseline", gap: 9, textDecoration: "none" }}>
-            <span style={{ fontFamily: "'Spectral',serif", fontWeight: 800, fontSize: 25, letterSpacing: "-0.6px", lineHeight: 1 }}>
+            <span className="gnbn-wordmark" style={{ fontFamily: "'Spectral',serif", fontWeight: 800, fontSize: 25, letterSpacing: "-0.6px", lineHeight: 1, whiteSpace: "nowrap" }}>
               <span style={{ color: "#19734a" }}>Good News</span> <span style={{ color: "#a33429" }}>Bad News</span>
             </span>
           </Link>
-          <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 9, fontWeight: 600, letterSpacing: "1.4px", color: "#8a857a", textTransform: "uppercase" }}>in</span>
+          <span className="gnbn-in-label" style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 9, fontWeight: 600, letterSpacing: "1.4px", color: "#8a857a", textTransform: "uppercase" }}>in</span>
           <select
+            className="gnbn-city-select"
             value={city}
             onChange={(e) => setCity(e.target.value as CityKey)}
+            aria-label="Choose your city"
             style={{
               fontFamily: "'IBM Plex Mono',monospace", fontSize: 11, fontWeight: 600, letterSpacing: "1px",
               color: "#9a6a12", textTransform: "uppercase", border: "1px solid #c99a2e80", borderRadius: 6,
@@ -62,21 +97,16 @@ export default function Header() {
             <option value="honolulu">Honolulu, HI</option>
           </select>
         </div>
+
+        {/* Desktop nav */}
         <nav
+          className="gnbn-nav-desktop"
           style={{
             display: "flex", gap: 4, alignItems: "center", flexWrap: "wrap",
             fontFamily: "'Public Sans',sans-serif", fontSize: 13.5, fontWeight: 600,
           }}
         >
-          {link("/latest", "Latest", is("/latest"))}
-          {link("/good", "Good", is("/good"))}
-          {link("/bad", "Bad", is("/bad"))}
-          {link("/both", "Both", is("/both"))}
-          {link("/map", "Map", is("/map"))}
-          {link("/digest", "Digest", is("/digest"))}
-          {link("/about", "About", is("/about"))}
-          {link("/standards", "Standards", is("/standards"))}
-          {link("/partners", "Partners", is("/partners"))}
+          {NAV_LINKS.map(([href, label]) => link(href, label, is(href)))}
           {isAdmin &&
             link("/admin", "Moderation", is("/admin"), { fontFamily: "'IBM Plex Mono',monospace", fontSize: 12 })}
           {status === "authenticated" ? (
@@ -99,7 +129,54 @@ export default function Header() {
             Submit a Signal
           </Link>
         </nav>
+
+        {/* Mobile hamburger */}
+        <button
+          className="gnbn-hamburger"
+          onClick={() => setOpen((v) => !v)}
+          aria-expanded={open}
+          aria-label={open ? "Close menu" : "Open menu"}
+          style={{
+            border: "1px solid #d8cab2", background: "#fffaf1", borderRadius: 10,
+            padding: "10px 12px", cursor: "pointer", flexDirection: "column", gap: 4,
+            alignItems: "center", justifyContent: "center",
+          }}
+        >
+          <span style={{ display: "block", width: 20, height: 2, background: INK, transition: "transform 0.2s", transform: open ? "translateY(6px) rotate(45deg)" : "none" }} />
+          <span style={{ display: "block", width: 20, height: 2, background: INK, opacity: open ? 0 : 1, transition: "opacity 0.15s" }} />
+          <span style={{ display: "block", width: 20, height: 2, background: INK, transition: "transform 0.2s", transform: open ? "translateY(-6px) rotate(-45deg)" : "none" }} />
+        </button>
       </div>
+
+      {/* Mobile menu panel */}
+      {open && (
+        <nav className="gnbn-mobile-menu" aria-label="Mobile" style={{ borderTop: "1px solid #d8cab2", background: "#f8f2e7", maxHeight: "calc(100vh - 68px)", overflowY: "auto" }}>
+          <div style={{ padding: "8px 24px 22px" }}>
+            {NAV_LINKS.map(([href, label]) => mobileRow(href, label))}
+            {isAdmin && mobileRow("/admin", "Moderation")}
+            {status === "authenticated" && mobileRow("/account", "Account")}
+
+            <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 18 }}>
+              <Link href="/submit" onClick={() => setOpen(false)} style={{ textDecoration: "none", textAlign: "center", background: "#161616", color: "#fff", borderRadius: 999, padding: "14px 20px", fontWeight: 700, fontSize: 15.5 }}>
+                Submit a Signal
+              </Link>
+              {status !== "authenticated" && (
+                <>
+                  <Link href="/signin?join=1" onClick={() => setOpen(false)} style={{ textDecoration: "none", textAlign: "center", background: "#19734a", color: "#fff", borderRadius: 999, padding: "14px 20px", fontWeight: 700, fontSize: 15.5 }}>
+                    Join &amp; get paid
+                  </Link>
+                  <Link href="/signin" onClick={() => setOpen(false)} style={{ textDecoration: "none", textAlign: "center", border: "1px solid #d8cab2", color: INK, background: "#fffdf8", borderRadius: 999, padding: "13px 20px", fontWeight: 700, fontSize: 15 }}>
+                    Sign in
+                  </Link>
+                </>
+              )}
+            </div>
+            <p style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 11, color: "#8a857a", letterSpacing: "0.5px", lineHeight: 1.6, margin: "18px 0 0", textAlign: "center" }}>
+              No gossip. No doxxing. Just local signal.
+            </p>
+          </div>
+        </nav>
+      )}
     </header>
   );
 }
