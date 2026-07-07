@@ -96,8 +96,8 @@ export default function HomePage() {
       <section style={{ background: "#161616", color: "#fff" }}>
         <div className="gnbn-section" style={{ maxWidth: 1240, margin: "0 auto", padding: "58px 24px 54px" }}>
           <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 12, fontWeight: 600, letterSpacing: "2.2px", textTransform: "uppercase", color: "#e89a8f", marginBottom: 18 }}>The unreported city</div>
-          <h2 style={{ fontFamily: "'Spectral',serif", fontWeight: 800, fontSize: "clamp(30px,4.6vw,54px)", lineHeight: 1.04, letterSpacing: "-1.6px", margin: "0 0 18px", maxWidth: 900 }}>
-            A bank robbery can go unreported here.<br />
+          <h2 style={{ fontFamily: "'Spectral',serif", fontWeight: 800, fontSize: "clamp(30px,4.6vw,54px)", lineHeight: 1.04, letterSpacing: "-1.6px", margin: "0 0 18px", maxWidth: 940 }}>
+            In your city, a bank robbery can go unreported.<br />
             <span style={{ color: "#7fcfa5" }}>So can a Little League grand slam.</span>
           </h2>
           <p style={{ fontFamily: "'Spectral',serif", fontSize: 19, lineHeight: 1.55, color: "#cfc8b9", maxWidth: 720, margin: "0 0 34px" }}>
