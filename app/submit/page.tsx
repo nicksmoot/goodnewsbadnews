@@ -27,7 +27,8 @@ const MIN_BODY = 300;
 
 export default function SubmitPage() {
   const { city, refreshPosts } = useStore();
-  const { status } = useSession();
+  const { data: session, status } = useSession();
+  const isAdmin = session?.user?.role === "admin";
   const cfg = cityCfg(city);
 
   const [form, setForm] = useState<SubmitForm>(() => blankForm(cfg.hoods[0]));
@@ -154,7 +155,7 @@ export default function SubmitPage() {
             <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
               <Link href="/latest" style={{ textDecoration: "none", background: "#fff", color: "#19734a", borderRadius: 999, padding: "12px 22px", fontWeight: 700 }}>Read the feed</Link>
               <button onClick={resetForm} style={{ border: "1px solid rgba(255,255,255,0.6)", background: "transparent", color: "#fff", borderRadius: 999, padding: "12px 22px", fontWeight: 700, cursor: "pointer" }}>Submit another</button>
-              {config.showAdmin && <Link href="/admin" style={{ textDecoration: "none", border: "1px solid rgba(255,255,255,0.6)", background: "transparent", color: "#fff", borderRadius: 999, padding: "12px 22px", fontWeight: 700 }}>See it in moderation</Link>}
+              {isAdmin && <Link href="/admin" style={{ textDecoration: "none", border: "1px solid rgba(255,255,255,0.6)", background: "transparent", color: "#fff", borderRadius: 999, padding: "12px 22px", fontWeight: 700 }}>See it in moderation</Link>}
             </div>
           </div>
         ) : (

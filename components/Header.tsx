@@ -5,14 +5,14 @@ import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useStore } from "@/lib/store";
 import { CityKey } from "@/lib/data";
-import { config } from "@/lib/config";
 
 const INK = "#161616";
 const MUTED = "#6b675e";
 
 export default function Header() {
   const { city, setCity } = useStore();
-  const { status } = useSession();
+  const { data: session, status } = useSession();
+  const isAdmin = session?.user?.role === "admin";
   const pathname = usePathname() || "/";
 
   const navColor = (active: boolean) => (active ? INK : MUTED);
@@ -77,7 +77,7 @@ export default function Header() {
           {link("/about", "About", is("/about"))}
           {link("/standards", "Standards", is("/standards"))}
           {link("/partners", "Partners", is("/partners"))}
-          {config.showAdmin &&
+          {isAdmin &&
             link("/admin", "Moderation", is("/admin"), { fontFamily: "'IBM Plex Mono',monospace", fontSize: 12 })}
           {status === "authenticated" ? (
             link("/account", "Account", is("/account"))
