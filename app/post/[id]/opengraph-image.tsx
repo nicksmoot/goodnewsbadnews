@@ -1,7 +1,8 @@
 import { ImageResponse } from "next/og";
 import { seedPosts, CAT } from "@/lib/data";
+import { OG_SIZE, ogFonts, Tile } from "@/lib/og";
 
-export const size = { width: 1200, height: 630 };
+export const size = OG_SIZE;
 export const contentType = "image/png";
 export const alt = "Good News Bad News";
 
@@ -14,42 +15,20 @@ export default async function Image({ params }: { params: { id: string } }) {
   const cat = p ? CAT[p.cat] || CAT.signal : CAT.signal;
   const title = p ? p.title : "A civic signal platform";
   const cityName = p ? (p.city === "honolulu" ? "Honolulu, HI" : "Spokane, WA") : "Spokane & Honolulu";
-  const meta = p ? `${cat.label.toUpperCase()} · ${p.hood} · ${cityName}` : "NOW LIVE IN SPOKANE & HONOLULU";
+  const kicker = p ? `${cat.label} · ${p.hood} · ${cityName}` : "Now live in Spokane & Honolulu";
+  const fonts = await ogFonts();
 
   return new ImageResponse(
     (
-      <div
-        style={{
-          width: "100%", height: "100%", display: "flex", flexDirection: "column",
-          background: "#f4ecdd", padding: "70px 76px", justifyContent: "space-between",
-          borderTop: `16px solid ${cat.color}`,
-        }}
-      >
-        <div style={{ display: "flex", flexDirection: "column" }}>
-          <div style={{ display: "flex", fontSize: 26, letterSpacing: 4, color: "#8a5e0f", fontWeight: 700 }}>
-            {meta}
-          </div>
-          <div
-            style={{
-              display: "flex", fontSize: title.length > 70 ? 60 : 74, fontWeight: 800,
-              color: "#161616", lineHeight: 1.05, marginTop: 34, letterSpacing: -2,
-            }}
-          >
-            {title}
-          </div>
-        </div>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div style={{ display: "flex", fontSize: 40, fontWeight: 800, letterSpacing: -1 }}>
-            <span style={{ color: "#19734a" }}>Good News</span>
-            <span style={{ color: "#161616" }}>&nbsp;</span>
-            <span style={{ color: "#a33429" }}>Bad News</span>
-          </div>
-          <div style={{ display: "flex", fontSize: 22, color: "#6b675e", letterSpacing: 2 }}>
-            A CIVIC SIGNAL PLATFORM
-          </div>
-        </div>
-      </div>
+      <Tile
+        accent={cat.color}
+        kicker={kicker}
+        kickerColor={cat.color === "#c99a2e" ? "#8a5e0f" : cat.color}
+        headline={title}
+        headlineSize={title.length > 75 ? 56 : title.length > 45 ? 64 : 76}
+        footerRight="Reviewed local signal"
+      />
     ),
-    { ...size }
+    { ...size, ...(fonts.length ? { fonts } : {}) }
   );
 }
