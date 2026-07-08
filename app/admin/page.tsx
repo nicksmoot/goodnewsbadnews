@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useStore } from "@/lib/store";
 import { CAT, CatKey } from "@/lib/data";
+import LaunchPlaybook from "@/components/LaunchPlaybook";
 
 interface QueueItem {
   id: string;
@@ -46,6 +47,7 @@ export default function AdminPage() {
   const { status: authStatus } = useSession();
   const [queue, setQueue] = useState<QueueItem[]>([]);
   const [state, setState] = useState<"loading" | "denied" | "ready">("loading");
+  const [tab, setTab] = useState<"queue" | "playbook">("queue");
 
   const load = useCallback(async () => {
     try {
@@ -107,9 +109,25 @@ export default function AdminPage() {
   const statQueue = q.filter((x) => x.wf !== "Published").length;
   const statFlagged = q.filter((x) => x.scan?.level === "flag" && x.wf !== "Published").length;
 
+  const tabBtn = (key: "queue" | "playbook", label: string): React.CSSProperties => ({
+    border: "none", background: "none", cursor: "pointer", padding: "0 0 12px",
+    fontFamily: "'IBM Plex Mono',monospace", fontSize: 13, fontWeight: 700, letterSpacing: "0.4px",
+    color: tab === key ? "#161616" : "#8a857a",
+    borderBottom: tab === key ? "2px solid #19734a" : "2px solid transparent",
+  });
+
   return (
     <div>
       <section style={{ maxWidth: 1340, margin: "0 auto", padding: "44px 24px 70px" }}>
+        <div role="tablist" style={{ display: "flex", gap: 22, borderBottom: "1px solid #d8cab2", marginBottom: 28 }}>
+          <button role="tab" aria-selected={tab === "queue"} onClick={() => setTab("queue")} style={tabBtn("queue", "Moderation board")}>Moderation board</button>
+          <button role="tab" aria-selected={tab === "playbook"} onClick={() => setTab("playbook")} style={tabBtn("playbook", "Market launch playbook")}>Market launch playbook</button>
+        </div>
+
+        {tab === "playbook" && <LaunchPlaybook />}
+
+        {tab === "queue" && (
+        <>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 16, borderBottom: "1px solid #d8cab2", paddingBottom: 18, marginBottom: 24 }}>
           <div>
             <div style={{ fontFamily: "'IBM Plex Mono',monospace", textTransform: "uppercase", letterSpacing: "1.6px", fontSize: 12, color: "#6b675e", marginBottom: 10 }}>Moderation · Internal · Live database</div>
@@ -201,6 +219,8 @@ export default function AdminPage() {
               ))}
             </div>
           </div>
+        )}
+        </>
         )}
       </section>
     </div>
