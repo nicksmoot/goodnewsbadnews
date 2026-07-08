@@ -3,7 +3,8 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import SignOutButton from "@/components/SignOutButton";
-import { CheckoutButton, PortalButton } from "@/components/MemberCTA";
+import { PortalButton } from "@/components/MemberCTA";
+import Pricing from "@/components/Pricing";
 import ActivityPanel from "@/components/ActivityPanel";
 
 export const dynamic = "force-dynamic";
@@ -107,14 +108,8 @@ export default async function AccountPage({ searchParams }: { searchParams?: { w
       </div>
 
       {!isMember && (
-        <div className="gnbn-dark-panel" style={{ background: "#161616", color: "#fff", borderRadius: 20, padding: 28, marginTop: 22 }}>
-          <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase", color: "#c99a2e", marginBottom: 12 }}>Become a member</div>
-          <h2 style={{ fontFamily: "'Spectral',serif", fontWeight: 800, fontSize: 26, lineHeight: 1.1, margin: "0 0 10px" }}>Read the full feed for $5/month.</h2>
-          <p style={{ fontSize: 15, lineHeight: 1.55, color: "#cfc8b9", margin: "0 0 18px" }}>
-            Members unlock every full story and pattern report, and get <strong>15 signal submissions a month</strong> included (then $0.50 each).
-          </p>
-          <CheckoutButton variant="dark" />
-          <p style={{ fontSize: 12.5, color: "#8a857a", margin: "12px 0 0" }}>Apple Pay and all major cards. Cancel anytime.</p>
+        <div style={{ marginTop: 26 }}>
+          <Pricing />
         </div>
       )}
 

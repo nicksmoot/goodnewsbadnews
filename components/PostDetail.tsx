@@ -124,11 +124,10 @@ export default function PostDetail({ id }: { id: string }) {
                 </>
               )}
             </div>
-            {signedIn && (
-              <p style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 11, color: "#8a857a", letterSpacing: "0.3px", margin: "16px 0 0" }}>
-                One-time $0.50. This story stays unlocked on your account.
-              </p>
-            )}
+            <p style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 11, color: "#8a857a", letterSpacing: "0.3px", margin: "16px 0 0" }}>
+              {signedIn ? "One-time $0.50. This story stays unlocked on your account. " : ""}
+              <Link href="/pricing" style={{ color: "#c99a2e", textDecoration: "underline" }}>Compare all options</Link>
+            </p>
           </div>
         )}
 

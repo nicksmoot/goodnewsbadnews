@@ -6,6 +6,7 @@ import { useStore } from "@/lib/store";
 import { cityCfg, CITIES } from "@/lib/data";
 import { cityPosts, decorateList } from "@/lib/selectors";
 import { HomeCard, SkeletonCards } from "@/components/cards";
+import Pricing from "@/components/Pricing";
 
 const TICKERS: Record<string, string[]> = {
   spokane: [
@@ -216,6 +217,11 @@ export default function HomePage() {
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 18 }}>
           {ready ? homePosts.map((p) => <HomeCard key={p.id} post={p} />) : <SkeletonCards count={6} minHeight={210} />}
         </div>
+      </section>
+
+      {/* Pricing */}
+      <section className="gnbn-section" style={{ maxWidth: 1240, margin: "0 auto", padding: "56px 24px 6px" }}>
+        <Pricing />
       </section>
 
       {/* Submit CTA */}

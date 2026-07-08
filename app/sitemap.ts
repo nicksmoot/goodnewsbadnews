@@ -7,7 +7,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const base = siteUrl();
   const staticRoutes = [
     "", "/latest", "/good", "/bad", "/both", "/map", "/leaderboard", "/submit",
-    "/digest", "/partners", "/academy", "/about", "/standards",
+    "/digest", "/partners", "/academy", "/pricing", "/about", "/standards",
   ].map((path) => ({
     url: `${base}${path}`,
     changeFrequency: (path === "" || path === "/latest" ? "daily" : "weekly") as "daily" | "weekly",

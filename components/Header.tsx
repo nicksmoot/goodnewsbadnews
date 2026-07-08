@@ -199,7 +199,7 @@ export default function Header() {
             {([
               ["Read", [["/latest", "Latest"], ["/good", "Good News"], ["/bad", "Bad News"], ["/both", "Both"]]],
               ["Explore", [["/map", "Signal Map"], ["/leaderboard", "The Ledger"], ["/digest", "Saturday Digest"]]],
-              ["Get involved", [["/academy", "Journalism training"], ["/partners", "For Newsrooms"]]],
+              ["Get involved", [["/pricing", "Pricing & membership"], ["/academy", "Journalism training"], ["/partners", "For Newsrooms"]]],
               ["The paper", [["/about", "About"], ["/standards", "Community Standards"]]],
             ] as [string, [string, string][]][]).map(([section, links]) => (
               <div key={section}>
