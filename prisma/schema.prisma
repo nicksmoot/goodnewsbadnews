@@ -80,6 +80,18 @@ model DigestSubscriber {
   createdAt  DateTime @default(now())
 }
 
+// A resident applying to the journalism training program (the Academy).
+model TrainingApplicant {
+  id         String   @id @default(cuid())
+  name       String
+  email      String
+  city       String
+  experience String   @default("New to this")
+  interest   String   @default("Reporting") // Reporting | Photography | Investigative | Not sure yet
+  note       String   @default("") @db.Text
+  createdAt  DateTime @default(now())
+}
+
 model PartnerInquiry {
   id        String   @id @default(cuid())
   org       String

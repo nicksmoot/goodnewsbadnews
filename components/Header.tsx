@@ -21,6 +21,7 @@ const NAV_LINKS: [string, string][] = [
   ["/leaderboard", "Ledger"],
   ["/digest", "Digest"],
   ["/partners", "Partners"],
+  ["/academy", "Academy"],
   ["/about", "About"],
 ];
 
@@ -198,7 +199,8 @@ export default function Header() {
             {([
               ["Read", [["/latest", "Latest"], ["/good", "Good News"], ["/bad", "Bad News"], ["/both", "Both"]]],
               ["Explore", [["/map", "Signal Map"], ["/leaderboard", "The Ledger"], ["/digest", "Saturday Digest"]]],
-              ["The paper", [["/about", "About"], ["/standards", "Community Standards"], ["/partners", "For Newsrooms"]]],
+              ["Get involved", [["/academy", "Journalism training"], ["/partners", "For Newsrooms"]]],
+              ["The paper", [["/about", "About"], ["/standards", "Community Standards"]]],
             ] as [string, [string, string][]][]).map(([section, links]) => (
               <div key={section}>
                 <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 10, fontWeight: 600, letterSpacing: "1.8px", textTransform: "uppercase", color: "#9a6a12", margin: "16px 0 2px" }}>{section}</div>

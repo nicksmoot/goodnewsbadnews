@@ -156,6 +156,38 @@ export function coordFor(city: CityKey, hood: string, id: string): { lat: number
   return { lat: t[0] + dy, lng: t[1] + dx };
 }
 
+// Great-circle distance in miles between two lat/lng points (Haversine).
+// Used by the Signal Map to read pins outward from the reader's location.
+export function haversineMi(a: [number, number], b: [number, number]): number {
+  const toRad = (d: number) => (d * Math.PI) / 180;
+  const R = 3958.8; // Earth radius, miles
+  const dLat = toRad(b[0] - a[0]);
+  const dLng = toRad(b[1] - a[1]);
+  const lat1 = toRad(a[0]);
+  const lat2 = toRad(b[0]);
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.min(1, Math.sqrt(h)));
+}
+
+// Which live city is the reader closest to? Lets "near me" jump to the right
+// city automatically instead of showing far-away pins.
+export function nearestCity(loc: [number, number]): CityKey {
+  let best: CityKey = "spokane";
+  let bestD = Infinity;
+  (Object.keys(CITIES) as CityKey[]).forEach((k) => {
+    const d = haversineMi(loc, CITIES[k].center);
+    if (d < bestD) { bestD = d; best = k; }
+  });
+  return best;
+}
+
+// Human-friendly distance label for the pin list.
+export function distanceLabel(mi: number): string {
+  if (mi < 0.1) return "right here";
+  if (mi < 10) return `${mi.toFixed(1)} mi away`;
+  return `${Math.round(mi)} mi away`;
+}
+
 export function typeToCat(t: string): CatKey {
   const m: Record<string, CatKey> = {
     "Good News": "good", "Bad News": "bad", "Both": "both", "Opportunity": "opportunity",

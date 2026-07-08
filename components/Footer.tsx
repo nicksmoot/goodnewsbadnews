@@ -34,6 +34,7 @@ export default function Footer() {
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 11, textTransform: "uppercase", letterSpacing: "1px", color: "#9a857a", marginBottom: 2 }}>Participate</span>
             <Link href="/submit" style={linkStyle}>Submit a Signal</Link>
+            <Link href="/academy" style={linkStyle}>Journalism Training</Link>
             <Link href="/digest" style={linkStyle}>Weekly Digest</Link>
             <Link href="/about" style={linkStyle}>About</Link>
             <Link href="/standards" style={linkStyle}>Community Standards</Link>
