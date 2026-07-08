@@ -8,8 +8,7 @@ import Link from "next/link";
 // one that still has an independent daily. Every dot is the same size, so the
 // picture is the ratio, not an approximation.
 
-const UNIT = 256; // 16 x 16
-const COLS = 16;
+const UNIT = 256; // 16 x 16 (columns set by .gnbn-ratio-grid in globals.css)
 const GREEN_AT = 138; // one survivor, roughly mid-field
 
 export default function LocalNewsStat() {
@@ -31,7 +30,8 @@ export default function LocalNewsStat() {
       <div
         role="img"
         aria-label="A block of 256 cities. One is green: the roughly one city in 256 that still has an independent daily newspaper."
-        style={{ display: "grid", gridTemplateColumns: `repeat(${COLS}, 1fr)`, gap: "clamp(7px,1.5vw,13px)", maxWidth: 560 }}
+        className="gnbn-ratio-grid"
+        style={{ gap: "clamp(6px,1.6vw,13px)", maxWidth: 560 }}
       >
         {Array.from({ length: UNIT }).map((_, i) => {
           const isGreen = i === GREEN_AT;

@@ -91,6 +91,11 @@ img { max-width: 100%; }
 /* Leaflet popup typography to match the brand */
 .leaflet-popup-content-wrapper { border-radius: 12px; }
 
+/* The local-news ratio grid (About mission section) keeps its 16 columns on
+   every screen. Columns live here, not inline, so the mobile single-column
+   collapse below (which targets inline grid-template-columns) never hits it. */
+.gnbn-ratio-grid { display: grid; grid-template-columns: repeat(16, 1fr); }
+
 /* ============================================================
    Responsive
    ============================================================ */
