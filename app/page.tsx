@@ -104,6 +104,11 @@ export default function HomePage() {
           <p style={{ fontFamily: "'Spectral',serif", fontSize: 19, lineHeight: 1.55, color: "#cfc8b9", maxWidth: 720, margin: "0 0 34px" }}>
             When a city loses its newsroom, the news keeps happening; it just stops being written down. The break-in and the breakthrough get the same coverage: none. Rumor fills the vacuum, trust goes with it, and the people doing the quiet good work never get their name in the paper. We&apos;re changing that.
           </p>
+          <div style={{ display: "flex", flexWrap: "wrap", alignItems: "baseline", gap: "4px 22px", margin: "0 0 34px" }}>
+            <span style={{ fontFamily: "'Spectral',serif", fontWeight: 800, fontSize: "clamp(22px,3vw,30px)", letterSpacing: "-0.8px" }}>19,500 U.S. cities.</span>
+            <span style={{ fontFamily: "'Spectral',serif", fontWeight: 800, fontSize: "clamp(22px,3vw,30px)", letterSpacing: "-0.8px", color: "#e89a8f" }}>76 independent daily papers left.</span>
+            <Link href="/about" style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 13, color: "#7fcfa5", fontWeight: 700, textDecoration: "none", letterSpacing: "0.4px" }}>See what&apos;s at stake &rarr;</Link>
+          </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 18 }}>
             <div style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.13)", borderTop: "3px solid #a33429", borderRadius: 14, padding: 22 }}>
               <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase", color: "#e89a8f", marginBottom: 10 }}>What goes unreported</div>

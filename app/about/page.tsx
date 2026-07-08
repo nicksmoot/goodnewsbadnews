@@ -2,6 +2,7 @@
 
 import { useStore } from "@/lib/store";
 import { cityCfg } from "@/lib/data";
+import LocalNewsStat from "@/components/LocalNewsStat";
 
 export default function AboutPage() {
   const { city } = useStore();
@@ -14,6 +15,11 @@ export default function AboutPage() {
         <h1 style={{ fontFamily: "'Spectral',serif", fontWeight: 800, fontSize: "clamp(34px,4.8vw,56px)", lineHeight: 1.02, letterSpacing: "-1.8px", margin: "0 0 24px" }}>A clearer signal for your city.</h1>
         <p style={{ fontFamily: "'Spectral',serif", fontSize: 21, lineHeight: 1.6, color: "#2b2820", margin: "0 0 20px" }}>Cities do not fail because nobody cares. They fail because the signal gets buried. Good work goes unnoticed. Problems become rumors. Residents see patterns long before institutions do - but there is no trusted place to send what they&apos;re seeing.</p>
         <p style={{ fontFamily: "'Spectral',serif", fontSize: 21, lineHeight: 1.6, color: "#2b2820", margin: "0 0 32px" }}>Good News Bad News exists to close that gap.</p>
+
+        <div style={{ margin: "0 0 32px" }}>
+          <LocalNewsStat />
+        </div>
+
         <div style={{ borderTop: "1px solid #d8cab2", paddingTop: 28, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
           <div>
             <h3 style={{ fontFamily: "'Spectral',serif", fontWeight: 700, fontSize: 22, margin: "0 0 8px" }}>What it is</h3>
