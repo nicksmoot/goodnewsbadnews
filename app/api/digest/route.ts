@@ -2,6 +2,10 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 
+// The digest is tiered: anyone can subscribe (email only) and gets the free
+// teaser edition; members get the full briefing. Entitlement is decided at
+// send time by matching a subscriber's email to a User with plan === "member",
+// so it always reflects current membership without storing a stale flag here.
 const schema = z.object({
   email: z.string().email(),
   city: z.enum(["spokane", "honolulu"]),
