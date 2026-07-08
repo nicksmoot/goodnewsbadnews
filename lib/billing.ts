@@ -14,6 +14,19 @@ function tsToDate(ts: number | null | undefined): Date | null {
   return ts ? new Date(ts * 1000) : null;
 }
 
+// Idempotently grant a reader access to one story. Shared by the webhook and
+// the synchronous confirm-on-return path so an unlock lands even if the
+// webhook is slow or not configured.
+export async function recordUnlock(userId: string, postId: string): Promise<void> {
+  await prisma.storyUnlock
+    .upsert({
+      where: { userId_postId: { userId, postId } },
+      create: { userId, postId },
+      update: {},
+    })
+    .catch(() => null);
+}
+
 export async function applyStripeEvent(event: Stripe.Event): Promise<string> {
   switch (event.type) {
     case "checkout.session.completed": {
@@ -34,6 +47,13 @@ export async function applyStripeEvent(event: Stripe.Event): Promise<string> {
         return "membership activated";
       }
       if (session.mode === "payment") {
+        // A $0.50 story unlock: grant the reader permanent access to one story.
+        if (session.metadata?.kind === "unlock") {
+          const userId = session.metadata?.userId;
+          const postId = session.metadata?.postId;
+          if (userId && postId) await recordUnlock(userId, postId);
+          return "story unlocked";
+        }
         // A paid signal: release it from PendingPayment into the moderation queue.
         await prisma.submission.updateMany({
           where: { stripeSessionId: session.id, wf: "PendingPayment" },

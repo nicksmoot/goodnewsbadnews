@@ -72,6 +72,19 @@ model Submission {
   @@index([userId])
 }
 
+// A single story a reader paid $0.50 to read without a membership. Ties the
+// unlock to the account so it persists across devices. postId is the public
+// post id (seed ids, or "p-<submissionId>" for published resident stories).
+model StoryUnlock {
+  id        String   @id @default(cuid())
+  userId    String
+  postId    String
+  createdAt DateTime @default(now())
+
+  @@unique([userId, postId])
+  @@index([userId])
+}
+
 model DigestSubscriber {
   id         String   @id @default(cuid())
   email      String   @unique

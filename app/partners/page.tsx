@@ -164,7 +164,7 @@ export default function PartnersPage() {
             <ul style={{ margin: 0, paddingLeft: 18, fontSize: 14.5, lineHeight: 1.75, color: "#3a362e", flex: 1 }}>
               <li>Pick from the stories getting traction on the feed</li>
               <li><strong>Exclusive print rights in your market</strong></li>
-              <li>The writer is paid on every license</li>
+              <li><strong>The full $100 goes directly to the journalist who reported it</strong></li>
               <li>Full story, photos, and contributor context included</li>
             </ul>
             <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 11, color: "#9a6a12", marginTop: 16, fontWeight: 700 }}>Best for weeklies &amp; independents</div>

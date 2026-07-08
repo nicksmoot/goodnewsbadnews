@@ -81,6 +81,20 @@ Posting then requires sign-in; non-members (and members past 15 posts) are
 sent through a $0.50 checkout, and the signal enters moderation only after
 payment (webhook-confirmed).
 
+## Per-story reading unlocks ($0.50 to read one story)
+
+The same `STRIPE_PRICE_SUBMISSION` ($0.50) price also powers per-story reading:
+a signed-in reader who isn't a member can pay $0.50 to unlock a single story
+instead of subscribing. No extra product or env var is needed. The unlock is
+tied to their account (table `StoryUnlock`) and persists across devices.
+
+It is confirmed two ways for robustness: synchronously the moment the reader
+returns from Checkout (`/api/billing/unlock/confirm` verifies the paid session),
+and via the `checkout.session.completed` webhook as a backstop. Both are already
+covered by the webhook events you set up above, so there is nothing extra to
+configure. If `STRIPE_PRICE_SUBMISSION` is unset, the per-story unlock button is
+simply unavailable and readers are offered membership only.
+
 ## Going live
 
 Repeat steps 1-5 with **Live mode** keys (`sk_live_...`, live price IDs, a

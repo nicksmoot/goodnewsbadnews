@@ -2,13 +2,13 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useStore } from "@/lib/store";
 import { decorate } from "@/lib/data";
 import { slugify } from "@/lib/slug";
 import ShareRow from "@/components/ShareRow";
-import { CheckoutButton } from "@/components/MemberCTA";
+import { CheckoutButton, UnlockButton } from "@/components/MemberCTA";
 
 const chipLink: React.CSSProperties = {
   fontFamily: "'IBM Plex Mono',monospace", fontSize: 11.5, color: "#3a362e", textDecoration: "none",
@@ -19,10 +19,51 @@ export default function PostDetail({ id }: { id: string }) {
   const { posts, seenLocal, followed, markSeen, toggleFollow, ready } = useStore();
   const { data: session, status } = useSession();
   const [helpOpen, setHelpOpen] = useState(false);
+  const [unlocked, setUnlocked] = useState(false);
 
   const raw = posts.find((p) => p.id === id);
   const isMember = session?.user?.plan === "member";
   const signedIn = status === "authenticated";
+  const canRead = isMember || unlocked;
+
+  // Per-story access. When the reader returns from a $0.50 Checkout the URL
+  // carries ?unlock=<session_id>; confirm it (so the story opens without
+  // waiting on the webhook), then check whether they already own this story.
+  useEffect(() => {
+    if (status === "loading" || !signedIn || isMember) return;
+    let cancelled = false;
+    const url = new URL(window.location.href);
+    const unlockSession = url.searchParams.get("unlock");
+
+    (async () => {
+      if (unlockSession) {
+        try {
+          const res = await fetch("/api/billing/unlock/confirm", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ sessionId: unlockSession }),
+          });
+          const data = await res.json().catch(() => ({}));
+          if (!cancelled && data.unlocked) setUnlocked(true);
+        } catch {
+          /* fall through to the status check below */
+        }
+        url.searchParams.delete("unlock");
+        window.history.replaceState({}, "", url.pathname + url.search);
+      }
+      try {
+        const res = await fetch(`/api/billing/unlock?postId=${encodeURIComponent(id)}`, { cache: "no-store" });
+        const data = await res.json().catch(() => ({}));
+        if (!cancelled && data.unlocked) setUnlocked(true);
+      } catch {
+        /* ignore */
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [id, signedIn, isMember, status]);
 
   if (!raw) {
     return (
@@ -55,35 +96,43 @@ export default function PostDetail({ id }: { id: string }) {
           </div>
         )}
 
-        {(isMember ? detail.body : detail.body.slice(0, 1)).map((para, i) => (
+        {(canRead ? detail.body : detail.body.slice(0, 1)).map((para, i) => (
           <p key={i} style={{ fontFamily: "'Spectral',serif", fontSize: 19, lineHeight: 1.62, color: "#2b2820", margin: "0 0 20px" }}>{para}</p>
         ))}
 
-        {!isMember && status !== "loading" && detail.body.length > 1 && (
+        {!canRead && status !== "loading" && detail.body.length > 1 && (
           <div className="gnbn-dark-panel" style={{ background: "#161616", color: "#fff", borderRadius: 20, padding: 30, margin: "4px 0 28px" }}>
-            <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase", color: "#c99a2e", marginBottom: 12 }}>Members read the full story</div>
-            <h2 style={{ fontFamily: "'Spectral',serif", fontWeight: 800, fontSize: 24, lineHeight: 1.12, margin: "0 0 10px" }}>The rest of this story is for members.</h2>
+            <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase", color: "#c99a2e", marginBottom: 12 }}>Keep reading</div>
+            <h2 style={{ fontFamily: "'Spectral',serif", fontWeight: 800, fontSize: 24, lineHeight: 1.12, margin: "0 0 10px" }}>Read the rest of this story.</h2>
             <p style={{ fontSize: 15, lineHeight: 1.55, color: "#cfc8b9", margin: "0 0 18px", maxWidth: 520 }}>
-              $5/month unlocks every full story and pattern report in the feed, plus 15 signal submissions a month included (then $0.50 each).
+              Unlock just this story for $0.50, or become a member for $5/month to read every full story and pattern report, plus 15 signal submissions a month included.
             </p>
-            <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+            <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
               {signedIn ? (
-                <CheckoutButton variant="dark" label="Become a member - $5/month" />
+                <>
+                  <UnlockButton postId={id} variant="dark" onUnlocked={() => setUnlocked(true)} />
+                  <CheckoutButton variant="dark" label="Become a member - $5/month" />
+                </>
               ) : (
                 <>
-                  <Link href={`/signin?callbackUrl=/post/${id}`} style={{ textDecoration: "none", background: "#19734a", color: "#fff", borderRadius: 999, padding: "12px 22px", fontWeight: 700, fontSize: 14.5 }}>
-                    Sign in to continue
+                  <Link href={`/signin?callbackUrl=/post/${id}`} style={{ textDecoration: "none", background: "#19734a", color: "#fff", borderRadius: 999, padding: "13px 22px", fontWeight: 700, fontSize: 14.5 }}>
+                    Sign in to unlock
                   </Link>
-                  <Link href="/signin?join=1&callbackUrl=/account" style={{ textDecoration: "none", border: "1px solid rgba(255,255,255,0.45)", color: "#fff", borderRadius: 999, padding: "12px 22px", fontWeight: 700, fontSize: 14.5 }}>
+                  <Link href={`/signin?join=1&callbackUrl=/post/${id}`} style={{ textDecoration: "none", border: "1px solid rgba(255,255,255,0.45)", color: "#fff", borderRadius: 999, padding: "13px 22px", fontWeight: 700, fontSize: 14.5 }}>
                     Become a member
                   </Link>
                 </>
               )}
             </div>
+            {signedIn && (
+              <p style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 11, color: "#8a857a", letterSpacing: "0.3px", margin: "16px 0 0" }}>
+                One-time $0.50. This story stays unlocked on your account.
+              </p>
+            )}
           </div>
         )}
 
-        {(isMember || detail.body.length <= 1) && (
+        {(canRead || detail.body.length <= 1) && (
           <div style={{ background: "#fbf4e6", border: "1px solid #d8cab2", borderRadius: 16, padding: 22, margin: "8px 0 24px" }}>
             <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 11, letterSpacing: "1.4px", textTransform: "uppercase", color: "#9a6a12", marginBottom: 10 }}>What happens next</div>
             <p style={{ fontSize: 15, lineHeight: 1.55, color: "#3a362e", margin: 0 }}>{detail.next}</p>
