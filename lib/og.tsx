@@ -41,9 +41,20 @@ export function ogFonts(): Promise<OgFont[]> {
 
 export function Wordmark({ size = 40 }: { size?: number }) {
   return (
-    <div style={{ display: "flex", fontFamily: "Spectral", fontSize: size, fontWeight: 800, letterSpacing: -1 }}>
+    <div style={{ display: "flex", alignItems: "center", fontFamily: "Spectral", fontSize: size, fontWeight: 800, letterSpacing: -1 }}>
       <span style={{ color: "#19734a" }}>Good News</span>
-      <span>&nbsp;</span>
+      <span
+        style={{
+          display: "flex",
+          padding: `0 ${Math.round(size * 0.12)}px`,
+          backgroundImage: "linear-gradient(to bottom, #19734a 0%, #19734a 50%, #a33429 50%, #a33429 100%)",
+          backgroundClip: "text",
+          WebkitBackgroundClip: "text",
+          color: "transparent",
+        }}
+      >
+        /
+      </span>
       <span style={{ color: "#a33429" }}>Bad News</span>
     </div>
   );

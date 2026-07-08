@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useStore } from "@/lib/store";
 import { CityKey } from "@/lib/data";
+import Wordmark from "@/components/Wordmark";
 
 const INK = "#161616";
 const MUTED = "#6b675e";
@@ -80,9 +81,7 @@ export default function Header() {
       >
         <div style={{ display: "flex", alignItems: "center", gap: 11, flexShrink: 0, minWidth: 0 }}>
           <Link href="/" style={{ display: "flex", alignItems: "baseline", gap: 9, textDecoration: "none" }}>
-            <span className="gnbn-wordmark" style={{ fontFamily: "'Spectral',serif", fontWeight: 800, fontSize: 25, letterSpacing: "-0.6px", lineHeight: 1, whiteSpace: "nowrap" }}>
-              <span style={{ color: "#19734a" }}>Good News</span> <span style={{ color: "#a33429" }}>Bad News</span>
-            </span>
+            <Wordmark className="gnbn-wordmark" size={25} />
           </Link>
           <span className="gnbn-in-label" style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 9, fontWeight: 600, letterSpacing: "1.4px", color: "#8a857a", textTransform: "uppercase" }}>in</span>
           <select

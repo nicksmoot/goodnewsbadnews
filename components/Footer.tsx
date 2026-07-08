@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { slugify } from "@/lib/slug";
+import Wordmark from "@/components/Wordmark";
 
 const linkStyle = { textDecoration: "none", color: "#3a362e" } as const;
 
@@ -16,8 +17,8 @@ export default function Footer() {
         }}
       >
         <div style={{ maxWidth: 340 }}>
-          <div style={{ fontFamily: "'Spectral',serif", fontWeight: 800, fontSize: 20, letterSpacing: "-0.4px", marginBottom: 8 }}>
-            <span style={{ color: "#19734a" }}>Good News</span> <span style={{ color: "#a33429" }}>Bad News</span>
+          <div style={{ marginBottom: 8 }}>
+            <Wordmark size={20} style={{ letterSpacing: "-0.4px" }} />
           </div>
           <p style={{ fontSize: 13, lineHeight: 1.55, color: "#6b675e", margin: 0 }}>
             A civic signal platform helping cities see themselves clearly. Now live in Spokane and Honolulu. We review submissions before publication and report patterns, not rumors.

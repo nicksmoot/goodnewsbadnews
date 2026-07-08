@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useStore } from "@/lib/store";
 import { cityCfg } from "@/lib/data";
+import Wordmark from "@/components/Wordmark";
 
 const darkInput: React.CSSProperties = {
   border: "1px solid rgba(255,255,255,0.2)", background: "rgba(255,255,255,0.06)", color: "#fff",
@@ -82,8 +83,8 @@ export default function PartnersPage() {
             <span>All the signal fit to print</span>
           </div>
           {/* wordmark */}
-          <div style={{ textAlign: "center", fontFamily: "'Spectral',serif", fontWeight: 800, fontSize: "clamp(32px,5.4vw,54px)", letterSpacing: "-1.4px", lineHeight: 1 }}>
-            <span style={{ color: "#19734a" }}>Good News</span> <span style={{ color: "#a33429" }}>Bad News</span>
+          <div style={{ textAlign: "center" }}>
+            <Wordmark style={{ fontSize: "clamp(32px,5.4vw,54px)", letterSpacing: "-1.4px", whiteSpace: "normal" }} />
           </div>
           {/* motto */}
           <div style={{ textAlign: "center", fontFamily: "'Spectral',serif", fontStyle: "italic", fontSize: 15, color: "#6b675e", marginTop: 8 }}>
