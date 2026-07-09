@@ -330,6 +330,14 @@ function buildHonolulu(): Post[] {
   }));
 }
 
+// Is a GPS coordinate within (roughly) the city? ~40km box around the city
+// center, matching the geocoder's sanity check. Used for local verification.
+export function withinCityBounds(city: CityKey, lat: number, lng: number): boolean {
+  const c = CITIES[city];
+  if (!c) return false;
+  return Math.abs(lat - c.center[0]) <= 0.4 && Math.abs(lng - c.center[1]) <= 0.5;
+}
+
 export function seedPosts(): Post[] {
   // Founding stories are always free: they are the seed corpus a new market
   // opens with, and they count toward getting each city habit-forming.

@@ -41,6 +41,9 @@ export default function SubmitPage() {
   const [sendError, setSendError] = useState("");
   const [seedFree, setSeedFree] = useState(false);
   const [seedLeft, setSeedLeft] = useState(0);
+  const [locVerified, setLocVerified] = useState<boolean | null>(null);
+  const [geoBusy, setGeoBusy] = useState(false);
+  const [geoError, setGeoError] = useState("");
 
   // While a city is still seeding (under config.freeSeedStories published),
   // posting there is free. Read that status so the fee copy tells the truth.
@@ -56,6 +59,53 @@ export default function SubmitPage() {
       .catch(() => {});
     return () => { cancelled = true; };
   }, [city]);
+
+  // One-time local check: has this signed-in user verified they're in the city?
+  useEffect(() => {
+    if (status !== "authenticated") { setLocVerified(null); return; }
+    let cancelled = false;
+    setGeoError("");
+    fetch(`/api/verify-location?city=${city}`, { cache: "no-store" })
+      .then((r) => r.json())
+      .then((d) => { if (!cancelled) setLocVerified(!!d?.verified); })
+      .catch(() => { if (!cancelled) setLocVerified(false); });
+    return () => { cancelled = true; };
+  }, [city, status]);
+
+  const verifyLocation = () => {
+    setGeoError("");
+    if (typeof navigator === "undefined" || !navigator.geolocation) {
+      setGeoError("Your browser can't share location. Try a different browser or device.");
+      return;
+    }
+    setGeoBusy(true);
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        try {
+          const res = await fetch("/api/verify-location", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ lat: pos.coords.latitude, lng: pos.coords.longitude, city }),
+          });
+          const data = await res.json().catch(() => ({}));
+          if (res.ok && data.verified) { setLocVerified(true); }
+          else { setGeoError(data.error || "We couldn't verify your location. Please try again."); }
+        } catch {
+          setGeoError("Network problem verifying your location. Please try again.");
+        }
+        setGeoBusy(false);
+      },
+      (err) => {
+        setGeoBusy(false);
+        setGeoError(
+          err.code === err.PERMISSION_DENIED
+            ? "Location access was blocked. Enable it in your browser settings, then try again - it confirms you're a local."
+            : "We couldn't get your location. Make sure location services are on, then try again."
+        );
+      },
+      { enableHighAccuracy: true, timeout: 12000, maximumAge: 60000 }
+    );
+  };
 
   useCityEffect(city, () => {
     setForm(blankForm(cityCfg(city).hoods[0]));
@@ -202,6 +252,31 @@ export default function SubmitPage() {
               <button onClick={resetForm} style={{ border: "1px solid rgba(255,255,255,0.6)", background: "transparent", color: "#fff", borderRadius: 999, padding: "12px 22px", fontWeight: 700, cursor: "pointer" }}>Submit another</button>
               {isAdmin && <Link href="/admin" style={{ textDecoration: "none", border: "1px solid rgba(255,255,255,0.6)", background: "transparent", color: "#fff", borderRadius: 999, padding: "12px 22px", fontWeight: 700 }}>See it in moderation</Link>}
             </div>
+          </div>
+        ) : config.requireLocationVerify && locVerified !== true ? (
+          <div className="gnbn-dark-panel" style={{ background: "#161616", color: "#fff", borderRadius: 20, padding: 32 }}>
+            <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase", color: "#c99a2e", marginBottom: 12 }}>Confirm you&apos;re local · one time</div>
+            <h2 style={{ fontFamily: "'Spectral',serif", fontWeight: 800, fontSize: 26, lineHeight: 1.12, margin: "0 0 10px" }}>Are you in {cfg.name}?</h2>
+            <p style={{ fontSize: 15, lineHeight: 1.55, color: "#cfc8b9", margin: "0 0 20px", maxWidth: 520 }}>
+              Good News Bad News is reported by the people who live it. Share your location once so we can confirm you&apos;re in {cfg.name}. We use it only to verify you&apos;re local, we don&apos;t store your exact coordinates or track you, and you won&apos;t be asked again for this city.
+            </p>
+            {locVerified === null ? (
+              <p style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 12.5, color: "#8a857a" }}>Checking…</p>
+            ) : (
+              <>
+                <button
+                  onClick={verifyLocation}
+                  disabled={geoBusy}
+                  style={{ border: "none", background: "#19734a", color: "#fff", borderRadius: 999, padding: "14px 26px", fontWeight: 700, fontSize: 15.5, cursor: geoBusy ? "default" : "pointer", opacity: geoBusy ? 0.7 : 1 }}
+                >
+                  {geoBusy ? "Checking your location…" : `Use my location to verify`}
+                </button>
+                {geoError && <p style={{ color: "#e89a8f", fontSize: 14, lineHeight: 1.5, margin: "14px 0 0", maxWidth: 520 }}>{geoError}</p>}
+                <p style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 11, color: "#8a857a", letterSpacing: "0.3px", margin: "16px 0 0" }}>
+                  Your browser will ask for permission. Not in {cfg.name}? Switch your city in the header.
+                </p>
+              </>
+            )}
           </div>
         ) : (
           <div>

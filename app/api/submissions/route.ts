@@ -55,6 +55,15 @@ export async function POST(req: Request) {
     );
   }
 
+  // Local check: the contributor must have verified (once) that they're in the
+  // city they're posting to. The client does this via GPS before showing the form.
+  if (config.requireLocationVerify && !(user.locationVerifiedAt && user.verifiedCity === d.city)) {
+    return NextResponse.json(
+      { error: `Verify you're in ${d.city === "honolulu" ? "Honolulu" : "Spokane"} before posting there.`, needsLocation: true },
+      { status: 403 }
+    );
+  }
+
   const isMember = user.plan === "member" && user.subscriptionStatus === "active";
   const hasIncludedPost = isMember && (user.postsThisPeriod ?? 0) < 15;
   const paymentsReady = stripeConfigured() && !!SUBMISSION_PRICE();

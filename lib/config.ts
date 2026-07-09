@@ -13,4 +13,7 @@ export const config = {
   showAdmin: true,
   requireSafetyCheck: true,
   freeSeedStories: 50,
+  // Require a one-time GPS check that the contributor is in the city before
+  // they can submit there. Verified once per city, then it stays unlocked.
+  requireLocationVerify: true,
 } as const;

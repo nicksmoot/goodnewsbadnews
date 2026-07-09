@@ -30,6 +30,11 @@ model User {
   postsThisPeriod Int      @default(0)
   periodStart     DateTime @default(now())
 
+  // Local verification: a one-time GPS check that the user is in the city they
+  // post to. Set once, then submitting stays unlocked for that city.
+  verifiedCity       String?
+  locationVerifiedAt DateTime?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
