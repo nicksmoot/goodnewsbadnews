@@ -55,8 +55,12 @@ export default function Footer() {
         </div>
       </div>
       <div style={{ borderTop: "1px solid #e4d8c2" }}>
-        <div style={{ maxWidth: 1240, margin: "0 auto", padding: "16px 24px", fontFamily: "'IBM Plex Mono',monospace", fontSize: 11, color: "#9a857a", letterSpacing: "0.3px" }}>
-          Good News Bad News · A civic signal platform · Now live in Spokane &amp; Honolulu · We review submissions before publication. A submitted signal is not a verified fact.
+        <div style={{ maxWidth: 1240, margin: "0 auto", padding: "16px 24px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 10, fontFamily: "'IBM Plex Mono',monospace", fontSize: 11, color: "#9a857a", letterSpacing: "0.3px" }}>
+          <span>Good News Bad News · A civic signal platform · Now live in Spokane &amp; Honolulu · We review submissions before publication. A submitted signal is not a verified fact.</span>
+          <span style={{ display: "flex", gap: 14, flexShrink: 0 }}>
+            <Link href="/privacy" style={linkStyle}>Privacy</Link>
+            <Link href="/terms" style={linkStyle}>Terms</Link>
+          </span>
         </div>
       </div>
     </footer>
