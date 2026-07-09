@@ -32,6 +32,31 @@ const kicker = (text: string): React.CSSProperties => ({
   fontSize: 12, color: "#6b675e",
 });
 
+// Wire entry labels get the brand's semantic colors so the duality reads
+// instantly, even at marquee speed.
+const WIRE_COLORS: Record<string, string> = {
+  GOOD: "#7fcfa5", WARNING: "#e89a8f", BAD: "#e89a8f", OPPORTUNITY: "#8fbfe0", BOTH: "#e8c46f",
+};
+
+function WireEntries({ items }: { items: string[] }) {
+  return (
+    <>
+      {items.map((raw, i) => {
+        const sep = raw.indexOf(":");
+        const label = sep > 0 ? raw.slice(0, sep) : "";
+        const rest = sep > 0 ? raw.slice(sep + 1) : raw;
+        return (
+          <span key={i}>
+            <span aria-hidden style={{ color: "#5a564d", padding: "0 14px" }}>·</span>
+            {label && <strong style={{ color: WIRE_COLORS[label] || "#cfc8b9", fontWeight: 700 }}>{label}:</strong>}
+            <span style={{ color: "#e7e1d4" }}>{rest}</span>
+          </span>
+        );
+      })}
+    </>
+  );
+}
+
 const howCard = (n: string, title: string, body: string) => (
   <div key={n} style={{ background: "#fffaf1", border: "1px solid #d8cab2", borderRadius: 18, padding: 22 }}>
     <div style={{ fontFamily: "'Spectral',serif", fontWeight: 800, fontSize: 34, color: "#9a6a12", lineHeight: 1, marginBottom: 12 }}>{n}</div>
@@ -51,8 +76,13 @@ export default function HomePage() {
   const statPublished = cp.length;
   const statQueue = stats[city]?.queue ?? 0;
 
+  // The city ledger: this city's live balance of good vs bad vs complicated.
+  const nGood = cp.filter((p) => p.cat === "good" || p.cat === "opportunity").length;
+  const nBad = cp.filter((p) => p.cat === "bad").length;
+  const nBoth = cp.filter((p) => p.cat === "both").length;
+  const ledgerTotal = Math.max(1, nGood + nBad + nBoth);
+
   const tk = TICKERS[city] || TICKERS.spokane;
-  const tickerText = "  ·  " + tk.join("  ·  ") + "  ·  ";
 
   const goCity = (c: "spokane" | "honolulu") => {
     setCity(c);
@@ -61,35 +91,59 @@ export default function HomePage() {
 
   return (
     <div>
+      {/* The live wire: proof of life, pinned right under the masthead */}
+      <div className="gnbn-wire" role="marquee" aria-label={`Latest signal from ${cfg.name}`}>
+        <span className="gnbn-wire-label"><span className="gnbn-wire-dot" aria-hidden />{cfg.name} wire</span>
+        <div className="gnbn-wire-viewport">
+          <div className="gnbn-wire-track"><WireEntries items={tk} /><WireEntries items={tk} /></div>
+        </div>
+      </div>
+
       {/* Hero */}
-      <section className="gnbn-section" style={{ maxWidth: 1240, margin: "0 auto", padding: "64px 24px 30px", display: "grid", gridTemplateColumns: "1.3fr 0.7fr", gap: 44, alignItems: "end" }}>
+      <section className="gnbn-section" style={{ maxWidth: 1240, margin: "0 auto", padding: "60px 24px 30px", display: "grid", gridTemplateColumns: "1.3fr 0.7fr", gap: 44, alignItems: "end" }}>
         <div>
           <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 12, fontWeight: 600, letterSpacing: "2px", color: "#9a6a12", textTransform: "uppercase", marginBottom: 18 }}>A civic signal platform · Now live in two cities</div>
-          <h1 style={{ fontFamily: "'Spectral',serif", fontWeight: 800, fontSize: "clamp(46px,7vw,88px)", lineHeight: 0.93, letterSpacing: "-2.5px", margin: "0 0 22px" }}>Every city has two stories. Both matter.</h1>
+          <h1 style={{ fontFamily: "'Spectral',serif", fontWeight: 800, fontSize: "clamp(46px,7vw,88px)", lineHeight: 0.95, letterSpacing: "-2.5px", margin: "0 0 20px" }}>
+            Every city has two stories.<br />
+            <span style={{ color: "#19734a" }}>The good.</span> <span style={{ color: "#a33429" }}>The bad.</span> Both matter.
+          </h1>
+          <div aria-hidden style={{ height: 4, width: 84, background: "linear-gradient(90deg, #19734a 0 50%, #a33429 50% 100%)", borderRadius: 2, marginBottom: 22 }} />
           <p style={{ fontSize: 20, lineHeight: 1.5, color: "#3a362e", maxWidth: 660, margin: "0 0 28px" }}>
             Local newsrooms are vanishing, and the stories didn&apos;t stop happening. They just stopped being told. Good News Bad News is where residents put their city back on the record: the wins, the warnings, the patterns, and the opportunities, reviewed and organized so the community can act. Now live in <strong>Spokane</strong> and <strong>Honolulu</strong>.
           </p>
-          <div className="gnbn-cta-row" style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 22 }}>
-            <Link href="/submit" style={{ textDecoration: "none", background: "#19734a", color: "#fff", borderRadius: 999, padding: "14px 24px", fontWeight: 700, fontSize: 16 }}>Submit a Signal</Link>
-            <Link href="/latest" style={{ textDecoration: "none", background: "transparent", color: "#161616", border: "1px solid #161616", borderRadius: 999, padding: "14px 24px", fontWeight: 700, fontSize: 16 }}>Read the Latest</Link>
-            <Link href="/digest" style={{ textDecoration: "none", background: "transparent", color: "#161616", border: "1px solid #d8cab2", borderRadius: 999, padding: "14px 24px", fontWeight: 700, fontSize: 16 }}>Get the Weekly Digest</Link>
+          <div className="gnbn-cta-row" style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center", marginBottom: 14 }}>
+            <Link href="/submit" className="gnbn-lift" style={{ textDecoration: "none", background: "#19734a", color: "#fff", borderRadius: 999, padding: "15px 26px", fontWeight: 700, fontSize: 16 }}>Report what you&apos;re seeing</Link>
+            <Link href="/latest" className="gnbn-lift" style={{ textDecoration: "none", background: "#161616", color: "#fff", borderRadius: 999, padding: "15px 26px", fontWeight: 700, fontSize: 16 }}>Read {cfg.name}&apos;s feed</Link>
           </div>
-          <p style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 12.5, color: "#6b675e", lineHeight: 1.5, letterSpacing: "0.2px", maxWidth: 560 }}>No gossip. No doxxing. No unsupported accusations. Just local signal, reviewed and organized.</p>
+          <p style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 12.5, color: "#6b675e", lineHeight: 1.6, letterSpacing: "0.2px", maxWidth: 560, margin: "0 0 18px" }}>
+            Prefer it weekly? <Link href="/digest" style={{ color: "#19734a", fontWeight: 700 }}>Get the Saturday Digest</Link> · No gossip. No doxxing. Just local signal, reviewed.
+          </p>
         </div>
         <aside style={{ background: "#fffaf1", border: "1px solid #d8cab2", borderRadius: 20, padding: 26, boxShadow: "0 10px 34px rgba(0,0,0,0.05)" }}>
-          <h3 style={{ fontFamily: "'Spectral',serif", fontWeight: 700, fontSize: 26, margin: "0 0 6px" }}>This week in {cfg.name}</h3>
-          <p style={{ fontSize: 14, color: "#5a564d", lineHeight: 1.5, margin: "0 0 14px" }}>The good, the bad, and the complicated - filtered through verified resident signals and human review.</p>
+          <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase", color: "#9a6a12", marginBottom: 8 }}>The city ledger</div>
+          <h3 style={{ fontFamily: "'Spectral',serif", fontWeight: 700, fontSize: 26, margin: "0 0 14px" }}>{cfg.name}, this week</h3>
+          {/* The balance bar: this city's live good/bad/complicated split */}
+          <div aria-label={`${nGood} good, ${nBad} bad, ${nBoth} complicated`} style={{ display: "flex", height: 14, borderRadius: 999, overflow: "hidden", border: "1px solid #d8cab2", marginBottom: 10 }}>
+            <span style={{ width: `${(nGood / ledgerTotal) * 100}%`, background: "#19734a", minWidth: nGood ? 8 : 0 }} />
+            <span style={{ width: `${(nBoth / ledgerTotal) * 100}%`, background: "#c99a2e", minWidth: nBoth ? 8 : 0 }} />
+            <span style={{ width: `${(nBad / ledgerTotal) * 100}%`, background: "#a33429", minWidth: nBad ? 8 : 0 }} />
+          </div>
+          <div style={{ display: "flex", gap: 14, flexWrap: "wrap", fontFamily: "'IBM Plex Mono',monospace", fontSize: 11.5, marginBottom: 16 }}>
+            <span style={{ color: "#19734a", fontWeight: 700 }}>{nGood} good</span>
+            <span style={{ color: "#9a6a12", fontWeight: 700 }}>{nBoth} complicated</span>
+            <span style={{ color: "#a33429", fontWeight: 700 }}>{nBad} bad</span>
+          </div>
           {[
             ["Published signals", String(statPublished)],
             ["In moderation queue", String(statQueue)],
             ["Most active area", cfg.activeArea],
-            ["Saturday digest", "Good / Bad / Both"],
           ].map(([label, val]) => (
             <div key={label} style={{ display: "flex", justifyContent: "space-between", borderTop: "1px solid #e4d8c2", padding: "12px 0", fontSize: 14 }}>
               <span style={{ color: "#5a564d" }}>{label}</span>
               <strong style={{ fontFamily: "'Spectral',serif", fontSize: 18 }}>{val}</strong>
             </div>
           ))}
+          <Link href="/map" style={{ display: "block", textAlign: "center", textDecoration: "none", marginTop: 12, border: "1px solid #19734a", color: "#19734a", borderRadius: 999, padding: "10px 16px", fontWeight: 700, fontSize: 13.5 }}>See it on the map &rarr;</Link>
         </aside>
       </section>
 
@@ -134,13 +188,13 @@ export default function HomePage() {
       <section style={{ maxWidth: 1240, margin: "0 auto", padding: "8px 24px 30px" }}>
         <div style={{ ...kicker(""), borderBottom: "1px solid #d8cab2", paddingBottom: 12, marginBottom: 22 }}>Now launching in two cities</div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18 }}>
-          <button onClick={() => goCity("spokane")} style={{ textAlign: "left", cursor: "pointer", background: "#fffaf1", border: "1px solid #d8cab2", borderRadius: 18, padding: 26, display: "flex", flexDirection: "column", gap: 9 }}>
+          <button onClick={() => goCity("spokane")} className="gnbn-lift" style={{ textAlign: "left", cursor: "pointer", background: "#fffaf1", border: "1px solid #d8cab2", borderRadius: 18, padding: 26, display: "flex", flexDirection: "column", gap: 9 }}>
             <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 11, letterSpacing: "1.4px", textTransform: "uppercase", color: "#9a6a12" }}>Washington</div>
             <h3 style={{ fontFamily: "'Spectral',serif", fontWeight: 800, fontSize: 32, margin: 0, letterSpacing: "-0.8px" }}>Spokane</h3>
             <p style={{ fontSize: 14.5, lineHeight: 1.5, color: "#5a564d", margin: 0 }}>Live across {CITIES.spokane.hoods.length} neighborhoods. Explore the signal map, read the latest feed, and submit what you&apos;re seeing.</p>
             <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 12, fontWeight: 700, color: "#19734a", marginTop: 4 }}>Open the Spokane map &rarr;</span>
           </button>
-          <button onClick={() => goCity("honolulu")} style={{ textAlign: "left", cursor: "pointer", background: "#fffaf1", border: "1px solid #d8cab2", borderRadius: 18, padding: 26, display: "flex", flexDirection: "column", gap: 9 }}>
+          <button onClick={() => goCity("honolulu")} className="gnbn-lift" style={{ textAlign: "left", cursor: "pointer", background: "#fffaf1", border: "1px solid #d8cab2", borderRadius: 18, padding: 26, display: "flex", flexDirection: "column", gap: 9 }}>
             <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 11, letterSpacing: "1.4px", textTransform: "uppercase", color: "#9a6a12" }}>Hawaiʻi</div>
             <h3 style={{ fontFamily: "'Spectral',serif", fontWeight: 800, fontSize: 32, margin: 0, letterSpacing: "-0.8px" }}>Honolulu</h3>
             <p style={{ fontSize: 14.5, lineHeight: 1.5, color: "#5a564d", margin: 0 }}>Live across {CITIES.honolulu.hoods.length} neighborhoods, from Waikīkī to Kalihi. See where the island&apos;s wins and concerns are clustering.</p>
@@ -148,11 +202,6 @@ export default function HomePage() {
           </button>
         </div>
       </section>
-
-      {/* Ticker */}
-      <div style={{ background: "#161616", color: "#fff", overflow: "hidden", whiteSpace: "nowrap", fontFamily: "'IBM Plex Mono',monospace", fontSize: 12.5, letterSpacing: "0.4px" }}>
-        <div style={{ display: "inline-block", padding: "11px 0", animation: "gnbn-ticker 46s linear infinite" }}>{tickerText}{tickerText}</div>
-      </div>
 
       {/* How it works */}
       <section className="gnbn-section" style={{ maxWidth: 1240, margin: "0 auto", padding: "56px 24px 10px" }}>
@@ -168,17 +217,17 @@ export default function HomePage() {
       {/* Good / Bad / Both */}
       <section style={{ maxWidth: 1240, margin: "0 auto", padding: "46px 24px 10px" }}>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 18 }}>
-          <Link href="/good" style={{ textDecoration: "none", display: "block", background: "#fffaf1", border: "1px solid #19734a59", borderLeft: "5px solid #19734a", borderRadius: 16, padding: 24 }}>
+          <Link href="/good" className="gnbn-lift" style={{ textDecoration: "none", display: "block", background: "#fffaf1", border: "1px solid #19734a59", borderLeft: "5px solid #19734a", borderRadius: 16, padding: 24 }}>
             <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontWeight: 600, letterSpacing: "1.4px", fontSize: 12, color: "#19734a", textTransform: "uppercase", marginBottom: 10 }}>Good News</div>
             <h3 style={{ fontFamily: "'Spectral',serif", fontWeight: 700, fontSize: 24, margin: "0 0 8px", color: "#161616" }}>The wins worth celebrating.</h3>
             <p style={{ fontSize: 14.5, lineHeight: 1.5, color: "#5a564d", margin: 0 }}>Improvements, inspiring people, promising programs, and local momentum.</p>
           </Link>
-          <Link href="/bad" style={{ textDecoration: "none", display: "block", background: "#fffaf1", border: "1px solid #a3342959", borderLeft: "5px solid #a33429", borderRadius: 16, padding: 24 }}>
+          <Link href="/bad" className="gnbn-lift" style={{ textDecoration: "none", display: "block", background: "#fffaf1", border: "1px solid #a3342959", borderLeft: "5px solid #a33429", borderRadius: 16, padding: 24 }}>
             <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontWeight: 600, letterSpacing: "1.4px", fontSize: 12, color: "#a33429", textTransform: "uppercase", marginBottom: 10 }}>Bad News</div>
             <h3 style={{ fontFamily: "'Spectral',serif", fontWeight: 700, fontSize: 24, margin: "0 0 8px", color: "#161616" }}>The problems that need attention.</h3>
             <p style={{ fontSize: 14.5, lineHeight: 1.5, color: "#5a564d", margin: 0 }}>Risks, gaps, failures, and early warnings - surfaced constructively.</p>
           </Link>
-          <Link href="/both" style={{ textDecoration: "none", display: "block", background: "#fffaf1", border: "1px solid #c99a2e80", borderLeft: "5px solid #c99a2e", borderRadius: 16, padding: 24 }}>
+          <Link href="/both" className="gnbn-lift" style={{ textDecoration: "none", display: "block", background: "#fffaf1", border: "1px solid #c99a2e80", borderLeft: "5px solid #c99a2e", borderRadius: 16, padding: 24 }}>
             <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontWeight: 600, letterSpacing: "1.4px", fontSize: 12, color: "#9a6a12", textTransform: "uppercase", marginBottom: 10 }}>Both</div>
             <h3 style={{ fontFamily: "'Spectral',serif", fontWeight: 700, fontSize: 24, margin: "0 0 8px", color: "#161616" }}>Where progress and problems coexist.</h3>
             <p style={{ fontSize: 14.5, lineHeight: 1.5, color: "#5a564d", margin: 0 }}>The complicated stories that don&apos;t fit a single label.</p>
@@ -191,7 +240,7 @@ export default function HomePage() {
         <div style={{ ...kicker(""), borderBottom: "1px solid #d8cab2", paddingBottom: 12, marginBottom: 22 }}>Trending this week in {cfg.name}</div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 14 }}>
           {(ready ? trending : []).map((p, i) => (
-            <Link key={p.id} href={`/post/${p.id}`} style={{ textDecoration: "none", color: "inherit", background: "#fffaf1", border: "1px solid #d8cab2", borderRadius: 14, padding: 16, display: "flex", flexDirection: "column", gap: 8, minHeight: 150 }}>
+            <Link key={p.id} href={`/post/${p.id}`} className="gnbn-lift" style={{ textDecoration: "none", color: "inherit", background: "#fffaf1", border: "1px solid #d8cab2", borderRadius: 14, padding: 16, display: "flex", flexDirection: "column", gap: 8, minHeight: 150 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
                 <span style={{ fontFamily: "'Spectral',serif", fontWeight: 800, fontSize: 22, color: p.catColor, lineHeight: 1 }}>{i + 1}</span>
                 <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 10, color: "#19734a", fontWeight: 600 }}>{p.helpfulLine}</span>
@@ -205,7 +254,7 @@ export default function HomePage() {
 
       {/* Ledger band */}
       <section style={{ maxWidth: 1240, margin: "0 auto", padding: "26px 24px 0" }}>
-        <Link href="/leaderboard" style={{ textDecoration: "none", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 14, flexWrap: "wrap", background: "#fff8eb", border: "1px solid #c99a2e80", borderLeft: "5px solid #c99a2e", borderRadius: 14, padding: "16px 20px" }}>
+        <Link href="/leaderboard" className="gnbn-lift" style={{ textDecoration: "none", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 14, flexWrap: "wrap", background: "#fff8eb", border: "1px solid #c99a2e80", borderLeft: "5px solid #c99a2e", borderRadius: 14, padding: "16px 20px" }}>
           <span style={{ fontFamily: "'Spectral',serif", fontWeight: 700, fontSize: 17, color: "#161616" }}>
             The Contributors&apos; Ledger: who&apos;s putting {cfg.name} on the record
           </span>

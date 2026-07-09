@@ -79,7 +79,7 @@ export default function SearchPage() {
         {results.map((p) => {
           const c = CAT[p.cat as CatKey] || CAT.signal;
           return (
-            <Link key={p.id} href={`/post/${p.id}`} style={{ textDecoration: "none", color: "inherit" }}>
+            <Link key={p.id} href={`/post/${p.id}`} className="gnbn-lift" style={{ textDecoration: "none", color: "inherit", display: "block" }}>
               <article style={{ background: "#fffdf8", border: "1px solid #e0d4be", borderRadius: 16, padding: "18px 20px" }}>
                 <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 9 }}>
                   <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontWeight: 600, letterSpacing: "0.8px", fontSize: 10, textTransform: "uppercase", padding: "3px 8px", borderRadius: 999, color: c.color, background: c.bg, border: `1px solid ${c.border}` }}>{c.label}</span>

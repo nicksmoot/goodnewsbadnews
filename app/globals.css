@@ -91,6 +91,38 @@ img { max-width: 100%; }
 /* Leaflet popup typography to match the brand */
 .leaflet-popup-content-wrapper { border-radius: 12px; }
 
+/* Interactive cards lift on hover so the page feels alive, not printed.
+   Transform + shadow only (no border/color change), so it's safe on cards
+   that carry semantic border colors. */
+.gnbn-lift { transition: transform 0.16s ease, box-shadow 0.16s ease; }
+.gnbn-lift:hover { transform: translateY(-3px); box-shadow: 0 16px 32px -14px rgba(26, 22, 19, 0.28); }
+.gnbn-lift:active { transform: translateY(-1px); }
+
+/* The live wire: a colorized marquee of recent signal, pinned under the
+   masthead. Pauses on hover so entries can actually be read. */
+.gnbn-wire { display: flex; align-items: stretch; background: #161616; color: #fff; overflow: hidden; }
+.gnbn-wire-label {
+  display: inline-flex; align-items: center; gap: 8px; flex-shrink: 0;
+  padding: 10px 14px 10px 18px; background: #161616; position: relative; z-index: 2;
+  font-family: "IBM Plex Mono", monospace; font-size: 10.5px; font-weight: 700;
+  letter-spacing: 1.6px; text-transform: uppercase; color: #c99a2e;
+  border-right: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: 14px 0 18px -6px #161616;
+}
+.gnbn-wire-dot { width: 7px; height: 7px; border-radius: 50%; background: #7fcfa5; animation: gnbn-wire-pulse 2.2s infinite; }
+@keyframes gnbn-wire-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(127, 207, 165, 0.55); }
+  70% { box-shadow: 0 0 0 8px rgba(127, 207, 165, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(127, 207, 165, 0); }
+}
+.gnbn-wire-viewport { overflow: hidden; white-space: nowrap; flex: 1; }
+.gnbn-wire-track {
+  display: inline-block; padding: 10px 0;
+  font-family: "IBM Plex Mono", monospace; font-size: 12.5px; letter-spacing: 0.4px;
+  animation: gnbn-ticker 46s linear infinite;
+}
+.gnbn-wire:hover .gnbn-wire-track { animation-play-state: paused; }
+
 /* The local-news ratio grid (About mission section) keeps its 16 columns on
    every screen. Columns live here, not inline, so the mobile single-column
    collapse below (which targets inline grid-template-columns) never hits it. */

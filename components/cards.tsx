@@ -56,7 +56,7 @@ const cardBase: React.CSSProperties = {
 
 export function HomeCard({ post }: { post: DecoratedPost }) {
   return (
-    <Link href={`/post/${post.id}`} style={{ ...cardBase, gap: 10, minHeight: 210 }}>
+    <Link href={`/post/${post.id}`} className="gnbn-lift" style={{ ...cardBase, gap: 10, minHeight: 210 }}>
       <div style={{ display: "flex", gap: 7, flexWrap: "wrap" }}>
         <CatBadge post={post} />
         <StatusBadge post={post} />
@@ -70,7 +70,7 @@ export function HomeCard({ post }: { post: DecoratedPost }) {
 
 export function FeedCard({ post }: { post: DecoratedPost }) {
   return (
-    <Link href={`/post/${post.id}`} style={{ ...cardBase, gap: 11, minHeight: 230 }}>
+    <Link href={`/post/${post.id}`} className="gnbn-lift" style={{ ...cardBase, gap: 11, minHeight: 230 }}>
       {post.hasPhoto && (
         <div style={{ position: "relative", width: "calc(100% + 40px)", height: 150, margin: "-20px -20px 0", borderRadius: "16px 16px 0 0", overflow: "hidden" }}>
           <Image src={post.photo} alt={post.title} fill sizes="(max-width: 860px) 100vw, 380px" style={{ objectFit: "cover" }} />
