@@ -40,6 +40,7 @@ export default function SubmitPage() {
   const [sendBusy, setSendBusy] = useState(false);
   const [sendError, setSendError] = useState("");
   const [seedFree, setSeedFree] = useState(false);
+  const [seedLeft, setSeedLeft] = useState(0);
 
   // While a city is still seeding (under config.freeSeedStories published),
   // posting there is free. Read that status so the fee copy tells the truth.
@@ -50,6 +51,7 @@ export default function SubmitPage() {
       .then((d) => {
         if (cancelled) return;
         setSeedFree(!!d?.[city]?.freePosting);
+        setSeedLeft(d?.[city]?.freeRemaining ?? 0);
       })
       .catch(() => {});
     return () => { cancelled = true; };
@@ -146,6 +148,18 @@ export default function SubmitPage() {
         <div style={{ fontFamily: "'IBM Plex Mono',monospace", textTransform: "uppercase", letterSpacing: "1.6px", fontSize: 12, color: "#6b675e", marginBottom: 14 }}>Submit a Signal</div>
         <h1 style={{ fontFamily: "'Spectral',serif", fontWeight: 800, fontSize: "clamp(34px,4.6vw,52px)", lineHeight: 1, letterSpacing: "-1.6px", margin: "0 0 14px" }}>What are you seeing in {cfg.name}?</h1>
         <p style={{ fontSize: 17, lineHeight: 1.5, color: "#5a564d", maxWidth: 640, margin: "0 0 22px" }}>Share real stories about public life in {cfg.name} - a good thing happening, a problem that needs attention, a pattern, a resource, or an opportunity. {submitFeeLine} Add a photo and tags if you have them.</p>
+
+        {seedFree && (
+          <div style={{ display: "flex", alignItems: "center", gap: 14, background: "#19734a", color: "#fff", borderRadius: 14, padding: "16px 20px", marginBottom: 26 }}>
+            <span aria-hidden style={{ fontSize: 22, lineHeight: 1 }}>✓</span>
+            <div>
+              <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 11, letterSpacing: "1.4px", textTransform: "uppercase", color: "#bfe6cf", marginBottom: 4 }}>Founding window · {cfg.name}</div>
+              <div style={{ fontSize: 15.5, lineHeight: 1.45, fontWeight: 600 }}>
+                Posting is <strong>free</strong> right now, no $0.50 fee.{seedLeft > 0 ? ` About ${seedLeft} founding ${seedLeft === 1 ? "story" : "stories"} left before ${cfg.name} switches to the paid model.` : ` While we get ${cfg.name} started.`}
+              </div>
+            </div>
+          </div>
+        )}
 
         <div style={{ background: "#fff8eb", border: "1px solid #c99a2e80", borderRadius: 14, padding: "16px 18px", marginBottom: 26 }}>
           <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 11, letterSpacing: "1.2px", textTransform: "uppercase", color: "#9a6a12", marginBottom: 8 }}>Real stories, real substance</div>
