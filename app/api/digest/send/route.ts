@@ -6,6 +6,7 @@ import { submissionToPost } from "@/lib/submissions";
 import { buildIssue, DigestPost, Tier } from "@/lib/digest";
 import { emailConfigured, sendEmail } from "@/lib/email";
 import { siteUrl } from "@/lib/site";
+import { unsubscribeUrl, unsubscribeApiUrl } from "@/lib/unsub";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -91,8 +92,14 @@ async function run(opts: RunOpts) {
     if (!configured) { report.skipped += 1; continue; }
     const city = (sub.city as CityKey) in CITIES ? (sub.city as CityKey) : "spokane";
     const posts = await postsFor(city);
-    const issue = buildIssue({ cityName: CITIES[city].name, tier, preference: sub.preference || "All Signals", posts, baseUrl: base, issueLabel: label });
-    const r = await sendEmail({ to: sub.email, subject: issue.subject, html: issue.html, text: issue.text });
+    const issue = buildIssue({ cityName: CITIES[city].name, tier, preference: sub.preference || "All Signals", posts, baseUrl: base, issueLabel: label, unsubscribeUrl: unsubscribeUrl(sub.email) });
+    const r = await sendEmail({
+      to: sub.email, subject: issue.subject, html: issue.html, text: issue.text,
+      headers: {
+        "List-Unsubscribe": `<${unsubscribeApiUrl(sub.email)}>`,
+        "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+      },
+    });
     if (r.ok) report.sent += 1;
     else { report.failed += 1; if (r.error && report.errors.length < 10) report.errors.push(`${sub.email}: ${r.error}`); }
   }

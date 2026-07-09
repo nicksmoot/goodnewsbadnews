@@ -24,12 +24,14 @@ export async function sendEmail({
   html,
   text,
   from,
+  headers,
 }: {
   to: string;
   subject: string;
   html: string;
   text?: string;
   from?: string;
+  headers?: Record<string, string>; // e.g. List-Unsubscribe for bulk mail
 }): Promise<SendResult> {
   const key = process.env.RESEND_API_KEY;
   if (!key) return { ok: false, skipped: true, error: "RESEND_API_KEY not set" };
@@ -37,7 +39,7 @@ export async function sendEmail({
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ from: from || digestFrom(), to, subject, html, text }),
+      body: JSON.stringify({ from: from || digestFrom(), to, subject, html, text, ...(headers ? { headers } : {}) }),
     });
     if (!res.ok) {
       const body = await res.text().catch(() => "");
