@@ -108,6 +108,9 @@ export default function Header() {
             fontFamily: "'Public Sans',sans-serif", fontSize: 13.5, fontWeight: 600,
           }}
         >
+          <Link href="/search" aria-label="Search stories" title="Search" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 38, height: 38, borderRadius: 999, color: is("/search") ? INK : MUTED, textDecoration: "none" }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><circle cx="11" cy="11" r="7" /><line x1="21" y1="21" x2="16.5" y2="16.5" /></svg>
+          </Link>
           {status === "authenticated" ? (
             link("/account", "Account", is("/account"))
           ) : (
@@ -197,7 +200,7 @@ export default function Header() {
           <div style={{ padding: "4px 24px 22px" }}>
             {([
               ["Read", [["/latest", "Latest"], ["/good", "Good News"], ["/bad", "Bad News"], ["/both", "Both"]]],
-              ["Explore", [["/map", "Signal Map"], ["/leaderboard", "The Ledger"], ["/digest", "Saturday Digest"]]],
+              ["Explore", [["/search", "Search stories"], ["/map", "Signal Map"], ["/leaderboard", "The Ledger"], ["/digest", "Saturday Digest"]]],
               ["Get involved", [["/pricing", "Pricing & membership"], ["/academy", "Journalism training"], ["/partners", "For Newsrooms"]]],
               ["The paper", [["/about", "About"], ["/standards", "Community Standards"]]],
             ] as [string, [string, string][]][]).map(([section, links]) => (
