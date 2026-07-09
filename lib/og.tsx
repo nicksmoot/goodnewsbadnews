@@ -39,23 +39,24 @@ export function ogFonts(): Promise<OgFont[]> {
 
 // Shared visual pieces -------------------------------------------------------
 
+// Brighter variants of the brand palette for text on the dark card.
+const BRIGHT: Record<string, string> = {
+  "#19734a": "#5cc491", // good
+  "#a33429": "#e08a79", // bad
+  "#c99a2e": "#e8c46f", // both / gold
+  "#8a5e0f": "#e8c46f",
+  "#285d83": "#8fbfe0", // opportunity
+  "#6b3fa0": "#b79ae0", // pattern
+  "#5a564d": "#b3a892", // signal
+};
+const bright = (c: string) => BRIGHT[c] || "#e8c46f";
+
 export function Wordmark({ size = 40 }: { size?: number }) {
   return (
     <div style={{ display: "flex", alignItems: "center", fontFamily: "Spectral", fontSize: size, fontWeight: 800, letterSpacing: -1 }}>
-      <span style={{ color: "#19734a" }}>Good News</span>
-      <span
-        style={{
-          display: "flex",
-          padding: `0 ${Math.round(size * 0.12)}px`,
-          backgroundImage: "linear-gradient(to bottom, #19734a 0%, #19734a 50%, #a33429 50%, #a33429 100%)",
-          backgroundClip: "text",
-          WebkitBackgroundClip: "text",
-          color: "transparent",
-        }}
-      >
-        /
-      </span>
-      <span style={{ color: "#a33429" }}>Bad News</span>
+      <span style={{ color: "#5cc491" }}>Good News</span>
+      <span style={{ display: "flex", padding: `0 ${Math.round(size * 0.14)}px`, color: "#f4ecdd" }}>/</span>
+      <span style={{ color: "#e08a79" }}>Bad News</span>
     </div>
   );
 }
@@ -75,38 +76,63 @@ export function Tile({
   headlineSize: number;
   footerRight: string;
 }) {
+  // First kicker segment gets the accent color (like the live wire); the rest
+  // stays muted so the category reads at a glance.
+  const sep = kicker.indexOf("\u00B7");
+  const kickerLead = sep > 0 ? kicker.slice(0, sep).trim() : kicker;
+  const kickerRest = sep > 0 ? kicker.slice(sep).trim() : "";
+
   return (
     <div
       style={{
         width: "100%", height: "100%", display: "flex", flexDirection: "column",
-        background: "#f4ecdd", padding: "64px 72px 56px", justifyContent: "space-between",
-        borderTop: `18px solid ${accent}`,
+        background: "#161616", position: "relative", overflow: "hidden",
       }}
     >
-      <div style={{ display: "flex", flexDirection: "column" }}>
-        <div style={{ display: "flex", flexDirection: "column" }}>
-          <div style={{ display: "flex", fontFamily: "IBM Plex Mono", fontSize: 25, letterSpacing: 4, color: kickerColor, textTransform: "uppercase" }}>
-            {kicker}
-          </div>
-          {/* newspaper double rule */}
-          <div style={{ display: "flex", flexDirection: "column", marginTop: 22 }}>
-            <div style={{ display: "flex", height: 3, background: "#161616" }} />
-            <div style={{ display: "flex", height: 1, background: "#161616", marginTop: 4 }} />
-          </div>
-        </div>
-        <div
-          style={{
-            display: "flex", fontFamily: "Spectral", fontSize: headlineSize, fontWeight: 800,
-            color: "#161616", lineHeight: 1.04, marginTop: 36, letterSpacing: -2,
-          }}
-        >
-          {headline}
-        </div>
+      {/* The split ledger band: the brand's duality as the top edge */}
+      <div style={{ display: "flex", height: 14, width: "100%" }}>
+        <div style={{ display: "flex", width: "50%", background: "#19734a" }} />
+        <div style={{ display: "flex", width: "50%", background: "#a33429" }} />
       </div>
-      <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
-        <Wordmark />
-        <div style={{ display: "flex", fontFamily: "IBM Plex Mono", fontSize: 20, color: "#6b675e", letterSpacing: 3, textTransform: "uppercase" }}>
-          {footerRight}
+
+      {/* Giant ghosted brand slash as texture */}
+      <div
+        style={{
+          display: "flex", position: "absolute", right: 30, top: -150,
+          fontFamily: "Spectral", fontWeight: 800, fontSize: 860, lineHeight: 1,
+          color: "#f4ecdd", opacity: 0.06,
+        }}
+      >
+        /
+      </div>
+
+      <div style={{ display: "flex", flexDirection: "column", flex: 1, justifyContent: "space-between", padding: "56px 72px 48px" }}>
+        <div style={{ display: "flex", flexDirection: "column" }}>
+          <div style={{ display: "flex", alignItems: "center", fontFamily: "IBM Plex Mono", fontSize: 24, letterSpacing: 4, textTransform: "uppercase" }}>
+            <span style={{ color: bright(kickerColor || accent), display: "flex" }}>{kickerLead}</span>
+            {kickerRest ? <span style={{ color: "#8a857a", marginLeft: 14, display: "flex" }}>{kickerRest}</span> : null}
+          </div>
+          <div
+            style={{
+              display: "flex", fontFamily: "Spectral", fontSize: headlineSize, fontWeight: 800,
+              color: "#f4ecdd", lineHeight: 1.04, marginTop: 34, letterSpacing: -2, maxWidth: 1000,
+            }}
+          >
+            {headline}
+          </div>
+        </div>
+        <div style={{ display: "flex", flexDirection: "column" }}>
+          {/* The ledger rule: small split signature above the wordmark row */}
+          <div style={{ display: "flex", height: 5, width: 118, marginBottom: 26, borderRadius: 3, overflow: "hidden" }}>
+            <div style={{ display: "flex", width: "50%", background: "#5cc491" }} />
+            <div style={{ display: "flex", width: "50%", background: "#e08a79" }} />
+          </div>
+          <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
+            <Wordmark />
+            <div style={{ display: "flex", fontFamily: "IBM Plex Mono", fontSize: 20, color: "#8a857a", letterSpacing: 3, textTransform: "uppercase" }}>
+              {footerRight}
+            </div>
+          </div>
         </div>
       </div>
     </div>
