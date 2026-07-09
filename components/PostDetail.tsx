@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useStore } from "@/lib/store";
-import { decorate } from "@/lib/data";
+import { decorate, CITIES } from "@/lib/data";
 import { slugify } from "@/lib/slug";
 import ShareRow from "@/components/ShareRow";
 import { CheckoutButton, UnlockButton } from "@/components/MemberCTA";
@@ -24,7 +24,9 @@ export default function PostDetail({ id }: { id: string }) {
   const raw = posts.find((p) => p.id === id);
   const isMember = session?.user?.plan === "member";
   const signedIn = status === "authenticated";
-  const canRead = isMember || unlocked;
+  // Launch mechanic: a city's founding + earliest stories are free for everyone.
+  const isFreeSeed = !!raw?.freeSeed;
+  const canRead = isMember || unlocked || isFreeSeed;
 
   // Per-story access. When the reader returns from a $0.50 Checkout the URL
   // carries ?unlock=<session_id>; confirm it (so the story opens without
@@ -99,6 +101,25 @@ export default function PostDetail({ id }: { id: string }) {
         {(canRead ? detail.body : detail.body.slice(0, 1)).map((para, i) => (
           <p key={i} style={{ fontFamily: "'Spectral',serif", fontSize: 19, lineHeight: 1.62, color: "#2b2820", margin: "0 0 20px" }}>{para}</p>
         ))}
+
+        {isFreeSeed && !isMember && !unlocked && detail.body.length > 1 && (
+          <div style={{ background: "#19734a12", border: "1px solid #19734a40", borderRadius: 16, padding: "20px 22px", margin: "6px 0 28px" }}>
+            <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase", color: "#19734a", marginBottom: 10 }}>Free while {CITIES[detail.city].name} gets started</div>
+            <p style={{ fontSize: 15, lineHeight: 1.55, color: "#2b2820", margin: "0 0 14px", maxWidth: 560 }}>
+              You just read this in full, no paywall. Early stories here are open to everyone while we build up {CITIES[detail.city].name}. When you become a member, you keep local reporting going and the residents who file these stories get paid.
+            </p>
+            <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
+              {signedIn ? (
+                <CheckoutButton label="Become a member - $5/month" />
+              ) : (
+                <Link href={`/signin?join=1&callbackUrl=/post/${id}`} style={{ textDecoration: "none", background: "#19734a", color: "#fff", borderRadius: 999, padding: "12px 22px", fontWeight: 700, fontSize: 14.5 }}>
+                  Become a member - $5/month
+                </Link>
+              )}
+              <Link href="/pricing" style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 12, color: "#19734a", textDecoration: "underline" }}>See how it works</Link>
+            </div>
+          </div>
+        )}
 
         {!canRead && status !== "loading" && detail.body.length > 1 && (
           <div className="gnbn-dark-panel" style={{ background: "#161616", color: "#fff", borderRadius: 20, padding: 30, margin: "4px 0 28px" }}>
