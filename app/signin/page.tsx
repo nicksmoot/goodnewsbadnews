@@ -111,6 +111,11 @@ function SignInInner() {
         <div>
           <label style={label} htmlFor="password">Password</label>
           <input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} placeholder={mode === "signup" ? "At least 8 characters" : "Your password"} style={field} autoComplete={mode === "signup" ? "new-password" : "current-password"} />
+          {mode === "signin" && (
+            <div style={{ textAlign: "right", marginTop: 8 }}>
+              <Link href="/forgot" style={{ fontSize: 13, color: "#19734a", fontWeight: 600, textDecoration: "none" }}>Forgot password?</Link>
+            </div>
+          )}
         </div>
 
         {error && (

@@ -67,6 +67,29 @@ export function welcomeEmail(name?: string | null): Email {
   };
 }
 
+// ---- Password reset ----
+export function passwordResetEmail(resetUrl: string): Email {
+  return {
+    subject: "Reset your Good News Bad News password",
+    html: shell({
+      eyebrow: "Password reset",
+      heading: "Reset your password.",
+      bodyHtml:
+        para("We got a request to reset your password. Use the button below to choose a new one. This link works once and expires in an hour.") +
+        `<div style="margin:6px 0 0">${button("Choose a new password", resetUrl)}</div>` +
+        para("If you didn't request this, you can safely ignore this email, your password stays the same."),
+    }),
+    text: [
+      "Reset your password.",
+      "",
+      "We got a request to reset your password. Open this link to choose a new one (works once, expires in an hour):",
+      resetUrl,
+      "",
+      "If you didn't request this, ignore this email, your password stays the same.",
+    ].join("\n"),
+  };
+}
+
 // ---- 2. Membership welcome (on Stripe subscription activation) ----
 export function membershipWelcomeEmail(): Email {
   const base = siteUrl();

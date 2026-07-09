@@ -119,3 +119,16 @@ model PartnerInquiry {
   note      String   @default("") @db.Text
   createdAt DateTime @default(now())
 }
+
+// Single-use password reset tokens. We store only a hash of the token; the raw
+// token lives only in the emailed link.
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  userId    String
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+}
