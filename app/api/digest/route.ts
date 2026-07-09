@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
+import { rateLimit, clientIp, tooMany } from "@/lib/ratelimit";
 
 // The digest is tiered: anyone can subscribe (email only) and gets the free
 // teaser edition; members get the full briefing. Entitlement is decided at
@@ -13,6 +14,9 @@ const schema = z.object({
 });
 
 export async function POST(req: Request) {
+  const rl = rateLimit(`digest:${clientIp(req)}`, 5, 600_000);
+  if (!rl.ok) return NextResponse.json(tooMany(rl.retryAfter), { status: 429 });
+
   let raw: unknown;
   try {
     raw = await req.json();

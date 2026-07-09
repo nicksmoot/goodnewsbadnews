@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { sendEmail } from "@/lib/email";
 import { partnerNotifyEmail, partnerAckEmail } from "@/lib/txnEmails";
+import { rateLimit, clientIp, tooMany } from "@/lib/ratelimit";
 
 const schema = z.object({
   org: z.string().trim().min(2).max(160),
@@ -13,6 +14,9 @@ const schema = z.object({
 });
 
 export async function POST(req: Request) {
+  const rl = rateLimit(`partner:${clientIp(req)}`, 5, 600_000);
+  if (!rl.ok) return NextResponse.json(tooMany(rl.retryAfter), { status: 429 });
+
   let raw: unknown;
   try {
     raw = await req.json();

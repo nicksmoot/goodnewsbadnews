@@ -4,6 +4,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { sendEmail } from "@/lib/email";
 import { welcomeEmail } from "@/lib/txnEmails";
+import { rateLimit, clientIp, tooMany } from "@/lib/ratelimit";
 
 const schema = z.object({
   email: z.string().email(),
@@ -12,6 +13,9 @@ const schema = z.object({
 });
 
 export async function POST(req: Request) {
+  const rl = rateLimit(`signup:${clientIp(req)}`, 5, 60_000);
+  if (!rl.ok) return NextResponse.json(tooMany(rl.retryAfter), { status: 429 });
+
   let body: unknown;
   try {
     body = await req.json();
