@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
+import { sendEmail } from "@/lib/email";
+import { storyPublishedEmail } from "@/lib/txnEmails";
+import { siteUrl } from "@/lib/site";
 
 const patchSchema = z.object({
   action: z.enum(["toNew", "toReview", "toVerified", "publish", "reject"]),
@@ -35,10 +38,16 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     return NextResponse.json({ ok: true });
   }
   if (action === "publish") {
-    await prisma.submission.update({
+    const updated = await prisma.submission.update({
       where: { id },
       data: { wf: "Published", status: "Verified", publishedAt: new Date() },
+      select: { id: true, title: true, user: { select: { email: true } } },
     });
+    // Tell the author their story went live. Best-effort.
+    if (updated.user?.email) {
+      const mail = storyPublishedEmail(updated.title, `${siteUrl()}/post/p-${updated.id}`);
+      sendEmail({ to: updated.user.email, subject: mail.subject, html: mail.html, text: mail.text }).catch(() => null);
+    }
     return NextResponse.json({ ok: true });
   }
   const t = WF[action];

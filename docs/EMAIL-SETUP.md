@@ -65,3 +65,25 @@ Everything below works from your terminal (swap in your domain and secret).
   reflected without touching the subscriber list.
 - Vercel Cron is available on Pro. On Hobby you can trigger the same GET endpoint
   from any external scheduler (cron-job.org, GitHub Actions) with the secret.
+
+## Transactional emails
+
+Beyond the weekly digest, the same Resend key powers four one-off emails
+(templates in `lib/txnEmails.ts`). They no-op safely until `RESEND_API_KEY` is
+set, and every send is fire-and-forget so it can never break the underlying
+action.
+
+| Trigger | Recipient |
+| --- | --- |
+| A resident signs up | Welcome email to the new contributor |
+| A Stripe membership activates | Membership welcome to the new member |
+| An editor publishes a story | "Your story is live" to the author |
+| A newsroom submits the partner form | Notification to `PARTNER_INBOX` + acknowledgement to the newsroom |
+
+Set one extra variable to route partner leads to your inbox:
+
+```
+PARTNER_INBOX=you@youremail.com
+```
+
+All four send from `DIGEST_FROM`, so no additional domain setup is needed.

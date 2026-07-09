@@ -1,5 +1,7 @@
 import type Stripe from "stripe";
 import { prisma } from "./db";
+import { sendEmail } from "./email";
+import { membershipWelcomeEmail } from "./txnEmails";
 
 // Pure-ish event application, separated from signature verification so the
 // business logic is testable without Stripe's servers.
@@ -34,7 +36,7 @@ export async function applyStripeEvent(event: Stripe.Event): Promise<string> {
       if (session.mode === "subscription") {
         const userId = session.metadata?.userId;
         if (!userId) return "no userId metadata";
-        await prisma.user.update({
+        const member = await prisma.user.update({
           where: { id: userId },
           data: {
             plan: "member",
@@ -43,7 +45,12 @@ export async function applyStripeEvent(event: Stripe.Event): Promise<string> {
             postsThisPeriod: 0,
             periodStart: new Date(),
           },
+          select: { email: true },
         }).catch(() => null);
+        if (member?.email) {
+          const mail = membershipWelcomeEmail();
+          sendEmail({ to: member.email, subject: mail.subject, html: mail.html, text: mail.text }).catch(() => null);
+        }
         return "membership activated";
       }
       if (session.mode === "payment") {

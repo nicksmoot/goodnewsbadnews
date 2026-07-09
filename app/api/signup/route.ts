@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
+import { sendEmail } from "@/lib/email";
+import { welcomeEmail } from "@/lib/txnEmails";
 
 const schema = z.object({
   email: z.string().email(),
@@ -33,9 +35,14 @@ export async function POST(req: Request) {
   }
 
   const passwordHash = await bcrypt.hash(parsed.data.password, 10);
+  const name = parsed.data.name || null;
   await prisma.user.create({
-    data: { email, passwordHash, name: parsed.data.name || null },
+    data: { email, passwordHash, name },
   });
+
+  // Fire-and-forget: a failed welcome must never fail the signup.
+  const mail = welcomeEmail(name);
+  sendEmail({ to: email, subject: mail.subject, html: mail.html, text: mail.text }).catch(() => null);
 
   return NextResponse.json({ ok: true });
 }
