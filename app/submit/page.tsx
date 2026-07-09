@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useStore, useCityEffect, SubmitForm } from "@/lib/store";
 import { CAT, TOPICS, HOODS, cityCfg, typeToCat } from "@/lib/data";
@@ -39,6 +39,21 @@ export default function SubmitPage() {
   const [substanceWarn, setSubstanceWarn] = useState(false);
   const [sendBusy, setSendBusy] = useState(false);
   const [sendError, setSendError] = useState("");
+  const [seedFree, setSeedFree] = useState(false);
+
+  // While a city is still seeding (under config.freeSeedStories published),
+  // posting there is free. Read that status so the fee copy tells the truth.
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/stats", { cache: "no-store" })
+      .then((r) => r.json())
+      .then((d) => {
+        if (cancelled) return;
+        setSeedFree(!!d?.[city]?.freePosting);
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [city]);
 
   useCityEffect(city, () => {
     setForm(blankForm(cityCfg(city).hoods[0]));
@@ -102,10 +117,17 @@ export default function SubmitPage() {
 
   const resetForm = () => { setForm(blankForm(cfg.hoods[0])); setStep(1); setSubmitted(false); };
 
-  const submitFeeLine = config.paidModel ? "Submitting costs $0.50 per signal, or is included with membership (15 a month)." : "Submitting is free.";
-  const submitButtonLabel = "Submit for review";
   const isMemberUser = session?.user?.plan === "member";
-  const submitButtonNote = config.paidModel && !isMemberUser
+  // Posting is free during a city's seed phase (and always free with unused
+  // member quota, or before payments are configured).
+  const postingIsFree = !config.paidModel || seedFree || isMemberUser;
+  const submitFeeLine = !config.paidModel
+    ? "Submitting is free."
+    : seedFree
+    ? `Posting is free while ${cfg.name} gets started - you're one of its founding contributors. It moves to $0.50 a signal once the city fills in.`
+    : "Submitting costs $0.50 per signal, or is included with membership (15 a month).";
+  const submitButtonLabel = "Submit for review";
+  const submitButtonNote = !postingIsFree
     ? "Checkout opens next; your signal enters moderation once payment completes. Nothing publishes automatically."
     : "Your signal goes straight to the moderation queue - nothing publishes automatically.";
 
@@ -141,7 +163,9 @@ export default function SubmitPage() {
             <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase", color: "#c99a2e", marginBottom: 12 }}>Account required</div>
             <h2 style={{ fontFamily: "'Spectral',serif", fontWeight: 800, fontSize: 26, lineHeight: 1.1, margin: "0 0 10px" }}>Every signal carries a real byline.</h2>
             <p style={{ fontSize: 15, lineHeight: 1.55, color: "#cfc8b9", margin: "0 0 18px", maxWidth: 520 }}>
-              Create a free account to submit. Posting costs $0.50 per signal to keep the feed spam-free, or is included with membership (15 a month) - and when a newsroom licenses your story, you get paid.
+              {seedFree
+                ? `Create a free account to submit. Posting is free while ${cfg.name} gets started, and when a newsroom licenses your story, you get paid.`
+                : "Create a free account to submit. Posting costs $0.50 per signal to keep the feed spam-free, or is included with membership (15 a month) - and when a newsroom licenses your story, you get paid."}
             </p>
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
               <Link href="/signin?join=1&callbackUrl=/submit" style={{ textDecoration: "none", background: "#19734a", color: "#fff", borderRadius: 999, padding: "13px 24px", fontWeight: 700, fontSize: 15 }}>Join free</Link>

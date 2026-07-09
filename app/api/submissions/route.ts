@@ -58,7 +58,13 @@ export async function POST(req: Request) {
   const isMember = user.plan === "member" && user.subscriptionStatus === "active";
   const hasIncludedPost = isMember && (user.postsThisPeriod ?? 0) < 15;
   const paymentsReady = stripeConfigured() && !!SUBMISSION_PRICE();
-  const mustPay = config.paidModel && !hasIncludedPost && paymentsReady;
+  // Seeding a new market: while a city has fewer than config.freeSeedStories
+  // published stories, posting is free for everyone (in lockstep with the
+  // free-to-read window). Supply is the cold-start bottleneck, so we don't
+  // charge to fill an empty board; the fee turns on once the city has depth.
+  const publishedInCity = await prisma.submission.count({ where: { wf: "Published", city: d.city } });
+  const inSeedPhase = publishedInCity < config.freeSeedStories;
+  const mustPay = config.paidModel && !hasIncludedPost && paymentsReady && !inSeedPhase;
 
   const result = scan(d.title + " " + d.body);
   const cat = typeToCat(d.type);
