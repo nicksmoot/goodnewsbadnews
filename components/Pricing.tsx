@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { CheckoutButton } from "@/components/MemberCTA";
+import { useStore } from "@/lib/store";
+import { cityCfg } from "@/lib/data";
 
 // The three ways to pay, shown side by side so the pay-as-you-go micro-payments
 // are a first-class choice next to the membership, not a hidden fallback.
@@ -33,7 +35,25 @@ const ctaGhost = (color: string): React.CSSProperties => ({
 
 export default function Pricing({ heading = true }: { heading?: boolean }) {
   const { status } = useSession();
+  const { city, stats } = useStore();
   const signedIn = status === "authenticated";
+  // Founding window: while the city is under its free-story threshold, the two
+  // pay-as-you-go options are free. Ribbons + prices reflect it automatically.
+  const seedFree = !!stats[city]?.freePosting;
+  const cityName = cityCfg(city).name;
+
+  const ribbon: React.CSSProperties = {
+    position: "absolute", top: -11, left: 18, background: "#19734a", color: "#fff",
+    fontFamily: "'IBM Plex Mono',monospace", fontSize: 10, fontWeight: 700,
+    letterSpacing: "1px", textTransform: "uppercase", padding: "4px 10px", borderRadius: 999,
+  };
+  const freePrice = (per: string) => (
+    <div style={priceStyle}>
+      <span style={{ color: "#19734a" }}>Free</span>{" "}
+      <span style={{ fontSize: 20, color: "#a9a294", textDecoration: "line-through", fontWeight: 700 }}>$0.50</span>{" "}
+      <span style={unit}>/ {per}</span>
+    </div>
+  );
 
   return (
     <div>
@@ -42,16 +62,19 @@ export default function Pricing({ heading = true }: { heading?: boolean }) {
           <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 12, letterSpacing: "2px", textTransform: "uppercase", color: "#6b675e", marginBottom: 10 }}>Simple pricing</div>
           <h2 style={{ fontFamily: "'Spectral',serif", fontWeight: 800, fontSize: "clamp(28px,3.6vw,42px)", letterSpacing: "-1px", lineHeight: 1.05, margin: 0 }}>Pay by the story, or read it all.</h2>
           <p style={{ fontSize: 16, color: "#5a564d", lineHeight: 1.55, maxWidth: 620, margin: "12px auto 0" }}>
-            No subscription required. Unlock a single story or post a single signal for 50 cents, or become a member for everything.
+            {seedFree
+              ? `Reading and posting are free during the ${cityName} launch. Once the city fills in, it's 50 cents a story or signal, or a membership for everything.`
+              : "No subscription required. Unlock a single story or post a single signal for 50 cents, or become a member for everything."}
           </p>
         </div>
       )}
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 16, alignItems: "stretch" }}>
         {/* Read one story */}
-        <div style={cardBase}>
+        <div style={{ ...cardBase, position: "relative" }}>
+          {seedFree && <span style={ribbon}>Free for the {cityName} launch</span>}
           <div style={kicker(BLUE)}>Pay per read</div>
-          <div style={priceStyle}>$0.50 <span style={unit}>/ story</span></div>
+          {seedFree ? freePrice("story") : <div style={priceStyle}>$0.50 <span style={unit}>/ story</span></div>}
           <p style={{ fontSize: 14.5, lineHeight: 1.55, color: "#3a362e", margin: "10px 0 18px" }}>
             Unlock any single story past the paywall, no membership needed. Open a locked story and tap <strong>Unlock this story</strong>. It stays unlocked on your account.
           </p>
@@ -59,9 +82,10 @@ export default function Pricing({ heading = true }: { heading?: boolean }) {
         </div>
 
         {/* Post one signal */}
-        <div style={cardBase}>
+        <div style={{ ...cardBase, position: "relative" }}>
+          {seedFree && <span style={ribbon}>Free for the {cityName} launch</span>}
           <div style={kicker(GOLD)}>Pay per post</div>
-          <div style={priceStyle}>$0.50 <span style={unit}>/ signal</span></div>
+          {seedFree ? freePrice("signal") : <div style={priceStyle}>$0.50 <span style={unit}>/ signal</span></div>}
           <p style={{ fontSize: 14.5, lineHeight: 1.55, color: "#3a362e", margin: "10px 0 18px" }}>
             Publish a single signal without a plan. Every post carries your byline, and when a newsroom licenses your story, <strong>you get paid</strong>.
           </p>

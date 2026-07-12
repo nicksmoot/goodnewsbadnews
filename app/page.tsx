@@ -153,8 +153,7 @@ export default function HomePage() {
           <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 12, fontWeight: 600, letterSpacing: "2.2px", textTransform: "uppercase", color: "#e89a8f", marginBottom: 18 }}>The unreported city</div>
           <h2 style={{ fontFamily: "'Spectral',serif", fontWeight: 800, fontSize: "clamp(30px,4.6vw,54px)", lineHeight: 1.04, letterSpacing: "-1.6px", margin: "0 0 18px", maxWidth: 940 }}>
             In your city, a bank robbery can go unreported.<br />
-            <span style={{ color: "#7fcfa5" }}>So can a Little League grand slam.</span><br />
-            Both are unacceptable.
+            <span style={{ color: "#7fcfa5" }}>So can a Little League grand slam.</span>
           </h2>
           <p style={{ fontFamily: "'Spectral',serif", fontSize: 19, lineHeight: 1.55, color: "#cfc8b9", maxWidth: 720, margin: "0 0 34px" }}>
             When a city loses its newsroom, the news keeps happening; it just stops being written down. The break-in and the breakthrough get the same coverage: none. Rumor fills the vacuum, trust goes with it, and the people doing the quiet good work never get their name in the paper.

@@ -27,6 +27,10 @@ export interface SubmitForm {
 export interface CityStats {
   queue: number;
   published: number;
+  // Founding window: while a city is under config.freeSeedStories published,
+  // posting (and the early stories) are free. Supplied by /api/stats.
+  freePosting?: boolean;
+  freeRemaining?: number;
 }
 
 interface StoreValue {
