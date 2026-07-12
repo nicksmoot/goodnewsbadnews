@@ -19,6 +19,22 @@ export function CatBadge({ post, small }: { post: DecoratedPost; small?: boolean
   );
 }
 
+export function SeedBadge({ post }: { post: DecoratedPost }) {
+  if (!post.seeded) return null;
+  return (
+    <span
+      title="Written by our desk to show the format while the city gets started"
+      style={{
+        fontFamily: "'IBM Plex Mono',monospace", fontWeight: 600, letterSpacing: "0.8px",
+        fontSize: 10, textTransform: "uppercase", padding: "3px 7px", borderRadius: 999,
+        color: "#8a857a", background: "#8a857a10", border: "1px dashed #b7ae9d",
+      }}
+    >
+      Founding example
+    </span>
+  );
+}
+
 export function StatusBadge({ post }: { post: DecoratedPost }) {
   return (
     <span
@@ -60,6 +76,7 @@ export function HomeCard({ post }: { post: DecoratedPost }) {
       <div style={{ display: "flex", gap: 7, flexWrap: "wrap" }}>
         <CatBadge post={post} />
         <StatusBadge post={post} />
+        <SeedBadge post={post} />
       </div>
       <h3 style={{ fontFamily: "'Spectral',serif", fontWeight: 700, fontSize: 20, lineHeight: 1.15, margin: 0 }}>{post.title}</h3>
       <p style={{ fontSize: 14, lineHeight: 1.45, color: "#5a564d", margin: 0, flex: 1 }}>{post.summary}</p>
@@ -79,6 +96,7 @@ export function FeedCard({ post }: { post: DecoratedPost }) {
       <div style={{ display: "flex", gap: 7, flexWrap: "wrap" }}>
         <CatBadge post={post} />
         <StatusBadge post={post} />
+        <SeedBadge post={post} />
       </div>
       <h3 style={{ fontFamily: "'Spectral',serif", fontWeight: 700, fontSize: 21, lineHeight: 1.15, margin: 0 }}>{post.title}</h3>
       <p style={{ fontSize: 14, lineHeight: 1.45, color: "#5a564d", margin: 0, flex: 1 }}>{post.summary}</p>

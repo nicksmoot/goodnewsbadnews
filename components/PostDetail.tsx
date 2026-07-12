@@ -88,9 +88,21 @@ export default function PostDetail({ id }: { id: string }) {
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap", margin: "22px 0 16px" }}>
           <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontWeight: 600, letterSpacing: "1px", fontSize: 11, textTransform: "uppercase", padding: "5px 10px", borderRadius: 999, color: detail.catColor, background: detail.catBg, border: `1px solid ${detail.catBorder}` }}>{detail.catLabel}</span>
           <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontWeight: 600, letterSpacing: "0.6px", fontSize: 11, textTransform: "uppercase", padding: "5px 10px", borderRadius: 999, color: detail.statusColor, border: `1px solid ${detail.statusBorder}` }}>{detail.status}</span>
+          {detail.seeded && (
+            <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontWeight: 600, letterSpacing: "0.8px", fontSize: 11, textTransform: "uppercase", padding: "5px 10px", borderRadius: 999, color: "#8a857a", border: "1px dashed #b7ae9d" }}>Founding example</span>
+          )}
         </div>
         <h1 style={{ fontFamily: "'Spectral',serif", fontWeight: 800, fontSize: "clamp(32px,4.4vw,46px)", lineHeight: 1.05, letterSpacing: "-1.4px", margin: "0 0 16px" }}>{detail.title}</h1>
         <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 12.5, color: "#8a857a", letterSpacing: "0.3px", borderBottom: "1px solid #d8cab2", paddingBottom: 20, marginBottom: 24 }}>{detail.metaLine}</div>
+
+        {detail.seeded && (
+          <div style={{ background: "#fbf4e6", border: "1px dashed #b7ae9d", borderRadius: 14, padding: "16px 18px", marginBottom: 24 }}>
+            <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 11, letterSpacing: "1.4px", textTransform: "uppercase", color: "#8a857a", marginBottom: 8 }}>Founding example</div>
+            <p style={{ fontSize: 14.5, lineHeight: 1.55, color: "#5a564d", margin: 0 }}>
+              This story was written by our desk to show what {CITIES[detail.city].name} reporting looks like here while the city gets started. Real resident stories, reviewed and verified, are replacing these now. Seen something real? <Link href="/submit" style={{ color: "#19734a", fontWeight: 700 }}>File a signal</Link>.
+            </p>
+          </div>
+        )}
 
         {detail.hasPhoto && (
           <div style={{ position: "relative", width: "100%", aspectRatio: "16 / 9", marginBottom: 26, borderRadius: 14, overflow: "hidden" }}>

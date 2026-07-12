@@ -33,6 +33,7 @@ export interface Post {
   lat: number;
   lng: number;
   freeSeed?: boolean; // launch mechanic: readable in full by everyone (see config.freeSeedStories)
+  seeded?: boolean; // founding example written by the desk (labeled in the UI)
 }
 
 export interface ScanResult {
@@ -341,7 +342,7 @@ export function withinCityBounds(city: CityKey, lat: number, lng: number): boole
 export function seedPosts(): Post[] {
   // Founding stories are always free: they are the seed corpus a new market
   // opens with, and they count toward getting each city habit-forming.
-  return [...buildSpokane(), ...buildHonolulu()].map((p) => ({ ...p, freeSeed: true }));
+  return [...buildSpokane(), ...buildHonolulu()].map((p) => ({ ...p, freeSeed: true, seeded: true }));
 }
 
 export function seedQueue(): QueueItem[] {

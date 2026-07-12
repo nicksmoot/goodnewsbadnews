@@ -106,7 +106,7 @@ export default function SignalMap() {
         m.addTo(map);
         const safe = String(p.title || "").replace(/</g, "&lt;");
         m.bindPopup(
-          `<div style="font-family:'Public Sans',sans-serif;max-width:230px"><div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.6px;text-transform:uppercase;color:${c.color};margin-bottom:4px">${c.label} · ${p.hood}</div><div style="font-family:'Spectral',serif;font-weight:700;font-size:15px;line-height:1.2;margin-bottom:8px;color:#161616">${safe}</div><a href="/post/${p.id}" style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#19734a;font-weight:600;text-decoration:none">Read the signal →</a></div>`
+          `<div style="font-family:'Public Sans',sans-serif;max-width:230px"><div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.6px;text-transform:uppercase;color:${c.color};margin-bottom:4px">${c.label} · ${p.hood}${p.seeded ? " · Example" : ""}</div><div style="font-family:'Spectral',serif;font-weight:700;font-size:15px;line-height:1.2;margin-bottom:8px;color:#161616">${safe}</div><a href="/post/${p.id}" style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#19734a;font-weight:600;text-decoration:none">Read the signal →</a></div>`
         );
       });
 

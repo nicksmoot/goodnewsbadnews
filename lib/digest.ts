@@ -12,6 +12,7 @@ export interface DigestPost {
   summary: string;
   hood: string;
   by: string;
+  seeded?: boolean; // founding example written by the desk (labeled)
 }
 
 export interface IssueInput {
@@ -65,7 +66,7 @@ function renderSection(def: SectionDef, posts: DigestPost[], tier: Tier, baseUrl
           : "";
       return `<div style="margin:0 0 16px">
         <a href="${url}" style="font-family:Georgia,serif;font-weight:700;font-size:18px;line-height:1.25;color:${INK};text-decoration:none">${esc(p.title)}</a>
-        <div style="font-family:'Courier New',monospace;font-size:11px;color:#8a857a;margin-top:3px">${esc(p.hood)} &middot; ${esc(p.by)}</div>
+        <div style="font-family:'Courier New',monospace;font-size:11px;color:#8a857a;margin-top:3px">${esc(p.hood)} &middot; ${esc(p.by)}${p.seeded ? " &middot; Founding example" : ""}</div>
         ${summary}
       </div>`;
     })

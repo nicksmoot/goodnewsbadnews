@@ -26,8 +26,8 @@ function issueLabel(): string {
   return `Week of ${MONTHS[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
 }
 
-function toDigestPost(p: { id: string; cat: string; title: string; summary: string; hood: string; by: string }): DigestPost {
-  return { id: p.id, cat: p.cat, title: p.title, summary: p.summary, hood: p.hood, by: p.by };
+function toDigestPost(p: { id: string; cat: string; title: string; summary: string; hood: string; by: string; seeded?: boolean }): DigestPost {
+  return { id: p.id, cat: p.cat, title: p.title, summary: p.summary, hood: p.hood, by: p.by, seeded: p.seeded };
 }
 
 // Published resident stories (recent first) enriched with the seed set, deduped
