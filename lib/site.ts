@@ -4,8 +4,8 @@ export const SITE = {
   name: "Good News Bad News",
   tagline: "A civic signal platform",
   description:
-    "A civic signal platform where residents submit the wins, concerns, patterns, and opportunities they're seeing. Reviewed, organized, and mapped. Now live in Spokane and Honolulu.",
-  cities: "Spokane & Honolulu",
+    "A civic signal platform where residents submit the wins, concerns, patterns, and opportunities they're seeing. Reviewed, organized, and mapped. Now live in Spokane, Honolulu, and Post Falls.",
+  cities: "Spokane, Honolulu & Post Falls",
 };
 
 export function siteUrl(): string {

@@ -13,7 +13,7 @@ export type CatKey =
   | "signal"
   | "pattern";
 
-export type CityKey = "spokane" | "honolulu";
+export type CityKey = "spokane" | "honolulu" | "postfalls";
 
 export interface Post {
   id: string;
@@ -126,6 +126,11 @@ export const CITIES: Record<CityKey, CityConfig> = {
     center: [21.3045, -157.848], zoom: 12, activeArea: "Chinatown",
     hoods: ["Waikīkī", "Kakaʻako", "Chinatown", "Kalihi", "Mānoa", "Kaimukī", "Ala Moana", "Kapālama", "Salt Lake", "Hawaiʻi Kai"],
   },
+  postfalls: {
+    key: "postfalls", name: "Post Falls", region: "Idaho", short: "Post Falls, ID",
+    center: [47.7077, -116.9516], zoom: 13, activeArea: "Downtown",
+    hoods: ["Downtown", "The Prairie", "Riverbend", "Greensferry", "Ross Point", "Treaty Rock", "The Highlands", "Q'emiln", "State Line"],
+  },
 };
 
 const HOOD_COORDS: Record<CityKey, Record<string, [number, number]>> = {
@@ -139,6 +144,11 @@ const HOOD_COORDS: Record<CityKey, Record<string, [number, number]>> = {
     "Kalihi": [21.334, -157.873], "Mānoa": [21.314, -157.801], "Kaimukī": [21.279, -157.803],
     "Ala Moana": [21.291, -157.843], "Kapālama": [21.326, -157.877], "Salt Lake": [21.352, -157.887],
     "Hawaiʻi Kai": [21.281, -157.708],
+  },
+  postfalls: {
+    "Downtown": [47.7085, -116.9515], "The Prairie": [47.733, -116.941], "Riverbend": [47.705, -116.988],
+    "Greensferry": [47.711, -116.927], "Ross Point": [47.704, -116.912], "Treaty Rock": [47.71, -116.96],
+    "The Highlands": [47.723, -116.906], "Q'emiln": [47.699, -116.956], "State Line": [47.703, -116.999],
   },
 };
 

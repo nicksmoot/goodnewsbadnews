@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   },
   description: SITE.description,
   applicationName: SITE.name,
-  keywords: ["local news", "civic", "Spokane", "Honolulu", "community", "signals", "neighborhood"],
+  keywords: ["local news", "civic", "Spokane", "Honolulu", "Post Falls", "community", "signals", "neighborhood"],
   alternates: {
     canonical: "/",
     types: { "application/rss+xml": `${siteUrl()}/feed.xml` },

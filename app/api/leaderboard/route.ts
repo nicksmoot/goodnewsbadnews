@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { CITIES, CityKey } from "@/lib/data";
 
 export const dynamic = "force-dynamic";
 
@@ -56,5 +57,6 @@ export async function GET() {
       .sort((a, b) => b.published - a.published)
       .slice(0, 20);
 
-  return NextResponse.json({ spokane: build("spokane"), honolulu: build("honolulu") });
+  const keys = Object.keys(CITIES) as CityKey[];
+  return NextResponse.json(Object.fromEntries(keys.map((k) => [k, build(k)])));
 }

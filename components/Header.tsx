@@ -97,6 +97,7 @@ export default function Header() {
           >
             <option value="spokane">Spokane, WA</option>
             <option value="honolulu">Honolulu, HI</option>
+            <option value="postfalls">Post Falls, ID</option>
           </select>
         </div>
 

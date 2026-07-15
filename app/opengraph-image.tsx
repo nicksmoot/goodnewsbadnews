@@ -11,7 +11,7 @@ export default async function Image() {
     (
       <Tile
         accent="#19734a"
-        kicker="A civic signal platform · Spokane & Honolulu"
+        kicker="A civic signal platform · Spokane · Honolulu · Post Falls"
         kickerColor="#8a5e0f"
         headline="Every city has two stories. Both matter."
         headlineSize={84}

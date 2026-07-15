@@ -1,5 +1,5 @@
 import { siteUrl, SITE } from "@/lib/site";
-import { seedPosts, CAT } from "@/lib/data";
+import { seedPosts, CAT, CITIES } from "@/lib/data";
 
 export const dynamic = "force-static";
 
@@ -15,7 +15,7 @@ export async function GET() {
     .slice(0, 40)
     .map((p) => {
       const cat = CAT[p.cat] || CAT.signal;
-      const cityName = p.city === "honolulu" ? "Honolulu" : "Spokane";
+      const cityName = CITIES[p.city]?.name || "Spokane";
       return `    <item>
       <title>${esc(p.title)}</title>
       <link>${base}/post/${p.id}</link>

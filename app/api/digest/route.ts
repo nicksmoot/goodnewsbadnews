@@ -9,7 +9,7 @@ import { rateLimit, clientIp, tooMany } from "@/lib/ratelimit";
 // so it always reflects current membership without storing a stale flag here.
 const schema = z.object({
   email: z.string().email(),
-  city: z.enum(["spokane", "honolulu"]),
+  city: z.enum(["spokane", "honolulu", "postfalls"]),
   preference: z.string().max(60).default("All Signals"),
 });
 

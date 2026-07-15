@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import PostDetail from "@/components/PostDetail";
-import { seedPosts, CAT } from "@/lib/data";
+import { seedPosts, CAT, CITIES } from "@/lib/data";
 import { SITE, siteUrl } from "@/lib/site";
 
 // Pre-render metadata for the seed stories (the real, server-known content).
@@ -20,7 +20,7 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
     return { title: "Signal", description: SITE.description };
   }
   const cat = CAT[p.cat] || CAT.signal;
-  const cityName = p.city === "honolulu" ? "Honolulu" : "Spokane";
+  const cityName = CITIES[p.city]?.name || "Spokane";
   const desc = p.summary;
   return {
     title: p.title,

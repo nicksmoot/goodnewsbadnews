@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useStore } from "@/lib/store";
-import { cityCfg, CITIES } from "@/lib/data";
+import { cityCfg, CITIES, CityKey } from "@/lib/data";
 import { cityPosts, decorateList } from "@/lib/selectors";
 import { HomeCard, SkeletonCards } from "@/components/cards";
 import Pricing from "@/components/Pricing";
@@ -16,6 +16,13 @@ const TICKERS: Record<string, string[]> = {
     "GOOD: a teacher starts a quiet breakfast club",
     "WARNING: responders seeing repeat calls near one corridor",
     "BOTH: new shelter adds beds, neighbors want better communication",
+  ],
+  postfalls: [
+    "GOOD: Post Falls is live - the founding window is open",
+    "OPPORTUNITY: the first 50 stories post free, with your byline",
+    "WARNING: unreported stories stay unreported - file what you see",
+    "GOOD: founding contributors keep their number forever",
+    "OPPORTUNITY: newsrooms license stories from this feed - writers get paid",
   ],
   honolulu: [
     "GOOD: volunteers clear two tons of debris off Waikīkī",
@@ -84,7 +91,7 @@ export default function HomePage() {
 
   const tk = TICKERS[city] || TICKERS.spokane;
 
-  const goCity = (c: "spokane" | "honolulu") => {
+  const goCity = (c: CityKey) => {
     setCity(c);
     router.push("/map");
   };
@@ -102,14 +109,14 @@ export default function HomePage() {
       {/* Hero */}
       <section className="gnbn-section" style={{ maxWidth: 1240, margin: "0 auto", padding: "60px 24px 30px", display: "grid", gridTemplateColumns: "1.3fr 0.7fr", gap: 44, alignItems: "end" }}>
         <div>
-          <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 12, fontWeight: 600, letterSpacing: "2px", color: "#9a6a12", textTransform: "uppercase", marginBottom: 18 }}>A civic signal platform · Now live in two cities</div>
+          <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 12, fontWeight: 600, letterSpacing: "2px", color: "#9a6a12", textTransform: "uppercase", marginBottom: 18 }}>A civic signal platform · Now live in three cities</div>
           <h1 style={{ fontFamily: "'Spectral',serif", fontWeight: 800, fontSize: "clamp(46px,7vw,88px)", lineHeight: 0.95, letterSpacing: "-2.5px", margin: "0 0 20px" }}>
             Every city has two stories.<br />
             <span style={{ color: "#19734a" }}>The good.</span> <span style={{ color: "#a33429" }}>The bad.</span> Both matter.
           </h1>
           <div aria-hidden style={{ height: 4, width: 84, background: "linear-gradient(90deg, #19734a 0 50%, #a33429 50% 100%)", borderRadius: 2, marginBottom: 22 }} />
           <p style={{ fontSize: 20, lineHeight: 1.5, color: "#3a362e", maxWidth: 660, margin: "0 0 28px" }}>
-            Local newsrooms are vanishing, and the stories didn&apos;t stop happening. They just stopped being told. Good News Bad News is where residents put their city back on the record: the wins, the warnings, the patterns, and the opportunities, reviewed and organized so the community can act. Now live in <strong>Spokane</strong> and <strong>Honolulu</strong>.
+            Local newsrooms are vanishing, and the stories didn&apos;t stop happening. They just stopped being told. Good News Bad News is where residents put their city back on the record: the wins, the warnings, the patterns, and the opportunities, reviewed and organized so the community can act. Now live in <strong>Spokane</strong>, <strong>Honolulu</strong>, and <strong>Post Falls</strong>.
           </p>
           <div className="gnbn-cta-row" style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center", marginBottom: 14 }}>
             <Link href="/submit" className="gnbn-lift" style={{ textDecoration: "none", background: "#19734a", color: "#fff", borderRadius: 999, padding: "15px 26px", fontWeight: 700, fontSize: 16 }}>Report what you&apos;re seeing</Link>
@@ -186,8 +193,8 @@ export default function HomePage() {
 
       {/* Two-city launch cards */}
       <section style={{ maxWidth: 1240, margin: "0 auto", padding: "8px 24px 30px" }}>
-        <div style={{ ...kicker(""), borderBottom: "1px solid #d8cab2", paddingBottom: 12, marginBottom: 22 }}>Now launching in two cities</div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18 }}>
+        <div style={{ ...kicker(""), borderBottom: "1px solid #d8cab2", paddingBottom: 12, marginBottom: 22 }}>Now live in three cities</div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 18 }}>
           <button onClick={() => goCity("spokane")} className="gnbn-lift" style={{ textAlign: "left", cursor: "pointer", background: "#fffaf1", border: "1px solid #d8cab2", borderRadius: 18, padding: 26, display: "flex", flexDirection: "column", gap: 9 }}>
             <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 11, letterSpacing: "1.4px", textTransform: "uppercase", color: "#9a6a12" }}>Washington</div>
             <h3 style={{ fontFamily: "'Spectral',serif", fontWeight: 800, fontSize: 32, margin: 0, letterSpacing: "-0.8px" }}>Spokane</h3>
@@ -199,6 +206,12 @@ export default function HomePage() {
             <h3 style={{ fontFamily: "'Spectral',serif", fontWeight: 800, fontSize: 32, margin: 0, letterSpacing: "-0.8px" }}>Honolulu</h3>
             <p style={{ fontSize: 14.5, lineHeight: 1.5, color: "#5a564d", margin: 0 }}>Live across {CITIES.honolulu.hoods.length} neighborhoods, from Waikīkī to Kalihi. See where the island&apos;s wins and concerns are clustering.</p>
             <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 12, fontWeight: 700, color: "#19734a", marginTop: 4 }}>Open the Honolulu map &rarr;</span>
+          </button>
+          <button onClick={() => goCity("postfalls")} className="gnbn-lift" style={{ textAlign: "left", cursor: "pointer", background: "#fffaf1", border: "1px solid #d8cab2", borderRadius: 18, padding: 26, display: "flex", flexDirection: "column", gap: 9 }}>
+            <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 11, letterSpacing: "1.4px", textTransform: "uppercase", color: "#9a6a12" }}>Idaho</div>
+            <h3 style={{ fontFamily: "'Spectral',serif", fontWeight: 800, fontSize: 32, margin: 0, letterSpacing: "-0.8px" }}>Post Falls</h3>
+            <p style={{ fontSize: 14.5, lineHeight: 1.5, color: "#5a564d", margin: 0 }}>Our newest market, live across {CITIES.postfalls.hoods.length} neighborhoods along the Spokane River. The founding window is open: be one of the first to put Post Falls on the record.</p>
+            <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 12, fontWeight: 700, color: "#19734a", marginTop: 4 }}>Open the Post Falls map &rarr;</span>
           </button>
         </div>
       </section>

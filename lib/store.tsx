@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
-import { CityKey, Post, seedPosts } from "./data";
+import { CityKey, Post, seedPosts, CITIES } from "./data";
 
 const K_CITY = "gnbn_city";
 const K_DIGEST = "gnbn_digest_v1";
@@ -55,12 +55,14 @@ const StoreContext = createContext<StoreValue | null>(null);
 
 function readCity(): CityKey {
   if (typeof localStorage === "undefined") return "spokane";
-  return localStorage.getItem(K_CITY) === "honolulu" ? "honolulu" : "spokane";
+  const c = localStorage.getItem(K_CITY);
+  return c && c in CITIES ? (c as CityKey) : "spokane";
 }
 
 const EMPTY_STATS: Record<CityKey, CityStats> = {
   spokane: { queue: 0, published: 0 },
   honolulu: { queue: 0, published: 0 },
+  postfalls: { queue: 0, published: 0 },
 };
 
 export function StoreProvider({ children }: { children: React.ReactNode }) {
@@ -89,7 +91,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       const res = await fetch("/api/stats", { cache: "no-store" });
       if (!res.ok) return;
       const data = await res.json();
-      if (data.spokane && data.honolulu) setStats(data);
+      if (data.spokane && data.honolulu) setStats({ ...EMPTY_STATS, ...data });
     } catch {}
   };
 
@@ -119,7 +121,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   };
 
   const setCity = (c: CityKey) => {
-    if (c !== "spokane" && c !== "honolulu") return;
+    if (!(c in CITIES)) return;
     try { localStorage.setItem(K_CITY, c); } catch {}
     setCityState(c);
   };

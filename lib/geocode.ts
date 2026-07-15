@@ -10,7 +10,7 @@ export async function geocodeCross(
   const q = (cross || "").trim();
   if (q.length < 3) return null;
 
-  const region = city === "honolulu" ? "Honolulu, Hawaii" : "Spokane, Washington";
+  const region = city === "honolulu" ? "Honolulu, Hawaii" : city === "postfalls" ? "Post Falls, Idaho" : "Spokane, Washington";
   const center = CITIES[city].center;
   const normalized = q.replace(/&/g, " and ").replace(/\s+/g, " ");
 

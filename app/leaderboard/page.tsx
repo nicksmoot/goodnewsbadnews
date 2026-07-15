@@ -25,9 +25,9 @@ export default function LeaderboardPage() {
       try {
         const res = await fetch("/api/leaderboard", { cache: "no-store" });
         if (res.ok) setBoard(await res.json());
-        else setBoard({ spokane: [], honolulu: [] });
+        else setBoard({ spokane: [], honolulu: [], postfalls: [] });
       } catch {
-        setBoard({ spokane: [], honolulu: [] });
+        setBoard({ spokane: [], honolulu: [], postfalls: [] });
       }
     })();
   }, []);

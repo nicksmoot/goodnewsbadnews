@@ -178,14 +178,14 @@ export function partnerAckEmail(org: string): Email {
       heading: "Thanks for reaching out.",
       bodyHtml:
         para(`We received your note from <strong>${esc(org)}</strong> and will follow up shortly. We are opening a small number of founding newsroom partnerships, one paper per market, so there is real value in getting on the calendar early.`) +
-        para("In the meantime, the two live markets, Spokane and Honolulu, show exactly what a licensed local stream looks like."),
+        para("In the meantime, the live markets - Spokane, Honolulu, and Post Falls - show exactly what a licensed local stream looks like."),
     }),
     text: [
       "Thanks for reaching out.",
       "",
       `We received your note from ${org} and will follow up shortly. We are opening a small number of founding newsroom partnerships, one paper per market.`,
       "",
-      "The two live markets, Spokane and Honolulu, show what a licensed local stream looks like.",
+      "The live markets - Spokane, Honolulu, and Post Falls - show what a licensed local stream looks like.",
     ].join("\n"),
   };
 }

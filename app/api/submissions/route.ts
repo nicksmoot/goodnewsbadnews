@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
-import { scan, typeToCat, coordFor, CityKey } from "@/lib/data";
+import { scan, typeToCat, coordFor, CityKey, CITIES } from "@/lib/data";
 import { geocodeCross } from "@/lib/geocode";
 import { config } from "@/lib/config";
 import { stripe, stripeConfigured, SUBMISSION_PRICE } from "@/lib/stripe";
@@ -21,7 +21,7 @@ const schema = z.object({
   body: z.string().trim().min(300).max(20000),
   tags: z.string().max(300).optional().default(""),
   photo: z.string().max(3_000_000).optional().default(""),
-  city: z.enum(["spokane", "honolulu"]),
+  city: z.enum(["spokane", "honolulu", "postfalls"]),
 });
 
 export async function POST(req: Request) {
@@ -59,7 +59,7 @@ export async function POST(req: Request) {
   // city they're posting to. The client does this via GPS before showing the form.
   if (config.requireLocationVerify && !(user.locationVerifiedAt && user.verifiedCity === d.city)) {
     return NextResponse.json(
-      { error: `Verify you're in ${d.city === "honolulu" ? "Honolulu" : "Spokane"} before posting there.`, needsLocation: true },
+      { error: `Verify you're in ${CITIES[d.city as CityKey]?.name || d.city} before posting there.`, needsLocation: true },
       { status: 403 }
     );
   }

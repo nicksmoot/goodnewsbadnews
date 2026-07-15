@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
-import { withinCityBounds, CityKey } from "@/lib/data";
+import { withinCityBounds, CityKey, CITIES } from "@/lib/data";
 
 export const dynamic = "force-dynamic";
 
@@ -24,7 +24,7 @@ export async function GET(req: Request) {
 const schema = z.object({
   lat: z.number().finite(),
   lng: z.number().finite(),
-  city: z.enum(["spokane", "honolulu"]),
+  city: z.enum(["spokane", "honolulu", "postfalls"]),
 });
 
 // POST { lat, lng, city } — the browser's GPS reading. If it falls inside the
@@ -47,7 +47,7 @@ export async function POST(req: Request) {
   const { lat, lng, city } = parsed.data;
   if (!withinCityBounds(city as CityKey, lat, lng)) {
     return NextResponse.json(
-      { error: `You appear to be outside ${city === "honolulu" ? "Honolulu" : "Spokane"}. You can only post in the city you're in.`, verified: false },
+      { error: `You appear to be outside ${CITIES[city as CityKey]?.name || city}. You can only post in the city you're in.`, verified: false },
       { status: 422 }
     );
   }

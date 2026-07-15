@@ -21,7 +21,7 @@ export default function Footer() {
             <Wordmark size={20} style={{ letterSpacing: "-0.4px" }} />
           </div>
           <p style={{ fontSize: 13, lineHeight: 1.55, color: "#6b675e", margin: 0 }}>
-            A civic signal platform helping cities see themselves clearly. Now live in Spokane and Honolulu. We review submissions before publication and report patterns, not rumors.
+            A civic signal platform helping cities see themselves clearly. Now live in Spokane, Honolulu, and Post Falls. We review submissions before publication and report patterns, not rumors.
           </p>
         </div>
         <div style={{ display: "flex", gap: 48, flexWrap: "wrap", fontSize: 13.5 }}>
@@ -56,7 +56,7 @@ export default function Footer() {
       </div>
       <div style={{ borderTop: "1px solid #e4d8c2" }}>
         <div style={{ maxWidth: 1240, margin: "0 auto", padding: "16px 24px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 10, fontFamily: "'IBM Plex Mono',monospace", fontSize: 11, color: "#9a857a", letterSpacing: "0.3px" }}>
-          <span>Good News Bad News · A civic signal platform · Now live in Spokane &amp; Honolulu · We review submissions before publication. A submitted signal is not a verified fact.</span>
+          <span>Good News Bad News · A civic signal platform · Now live in Spokane, Honolulu &amp; Post Falls · We review submissions before publication. A submitted signal is not a verified fact.</span>
           <span style={{ display: "flex", gap: 14, flexShrink: 0 }}>
             <Link href="/privacy" style={linkStyle}>Privacy</Link>
             <Link href="/terms" style={linkStyle}>Terms</Link>
